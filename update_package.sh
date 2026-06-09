@@ -1,0 +1,55 @@
+#! /usr/bin/bash
+
+# ToDo: integrate tests, when they are ready
+if [[ $EUID == 0 ]]; then
+  echo 'Should not be run as root.'
+  exit 2
+fi
+
+plugin_dir=~/.config/calibre/plugins
+build_dir=.build/wolnelektury/
+
+# version detection
+version="$(grep "PLUGIN_VERSION = " __init__.py)"
+pattern="\(([0-9]+)\,\s*([0-9]+)\,\s*([0-9]+)\)"
+
+if [[ $version =~ $pattern ]]; then
+  version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+else
+  echo 'Plugin version could not be read'
+  exit 1
+fi
+
+# name detection
+plugin_name="$(grep "name = " __init__.py)"
+pattern="name = '(.*)'"
+
+if [[ $plugin_name =~ $pattern ]]; then
+  plugin_name="${BASH_REMATCH[1]}"
+else
+  echo 'Plugin name could not be read'
+  exit 1
+fi
+
+# Sometimes calibre throws ImportError when only updating plugins, this solves that problem
+rm "${plugin_dir}/${plugin_name}.zip"
+
+# preparing clean build catalogue for calibre
+rm -rf $build_dir
+mkdir $build_dir
+# finding all necessery files for clean build
+files=$(ls | grep "\.py")" "$(ls | grep "plugin-import-name")
+cp $files $build_dir
+
+if result=$(calibre-customize -b $build_dir); then
+  # Left as feedback from calibre, if there are any warnings
+  echo $result | grep -v 'Plugin updated'
+else
+  echo 'Plugin package could not be generated'
+  exit 1
+fi
+
+# copying packed plugin
+cp "$plugin_dir/${plugin_name}.zip" "packages/${plugin_name}_$version.zip"
+
+echo 'Plugin package was generated'
