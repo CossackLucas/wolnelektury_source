@@ -27,6 +27,10 @@ from calibre_plugins.wolnelektury_source.main import get_metadata, get_cover_url
 
 _ = gettext.gettext
 
+# pylint: disable=undefined-variable
+load_translations()
+# pylint: enable=undefined-variable
+
 PLUGIN_VERSION = (0, 1, 0)
 
 class WolneLekturySource(Source):

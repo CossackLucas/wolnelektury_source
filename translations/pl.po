@@ -1,0 +1,33 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-10 06:49+0200\n"
+"PO-Revision-Date: 2026-06-10 07:02+0200\n"
+"Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
+"Language-Team: \n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: __init__.py:38
+msgid "Downloading metadata and covers from site wolnelektury.pl"
+msgstr "Pobieranie metadanych i okładek z portalu wolnelektury.pl"
+
+#: __init__.py:62
+msgid "Maximal number of covers to download"
+msgstr "Maksymalna liczba okładek do pobrania"
+
+#: __init__.py:63
+msgid "Maximal number of covers to download from the site"
+msgstr "Maksymalna liczba okładek do pobrania z portalu"
