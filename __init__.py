@@ -14,6 +14,8 @@ try:
 except ImportError:
     from urllib import HTTPError
 
+import gettext
+
 # pylint: disable=import-error
 from calibre.ebooks.metadata.sources.base import Source, Option
 # ToDo: to be removed and replaced with local implementation
@@ -23,6 +25,8 @@ from calibre_plugins.wolnelektury_source.main import get_metadata, get_cover_url
     BaseArgs, access_data, check_site_for_books, WOLNELEKTURY_ID
 # pylint: enable=import-error
 
+_ = gettext.gettext
+
 PLUGIN_VERSION = (0, 1, 0)
 
 class WolneLekturySource(Source):
@@ -31,7 +35,7 @@ class WolneLekturySource(Source):
     '''
     name = 'WolneLektury'
     author = 'Łukasz Kozak'
-    description = 'Pobieranie metadanych i okładek z portalu wolnelektury.pl'
+    description = _('Downloading metadata and covers from site wolnelektury.pl')
     version = PLUGIN_VERSION
     supported_platforms = ['windows', 'osx', 'linux']
     capabilities = frozenset(['identify', 'cover'])
@@ -55,8 +59,8 @@ class WolneLekturySource(Source):
     prefer_results_with_isbn = False
     options = (
         # ToDo: can it be limited to max number?
-        Option('max_covers', 'number', 2, ('Maksymalna liczba okładek do pobrania'),
-                      ('Maksymalna liczba okładek do pobrania z portalu')),
+        Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
+                      _('Maximal number of covers to download from the site')),
     )
 
     def is_configured(self):
