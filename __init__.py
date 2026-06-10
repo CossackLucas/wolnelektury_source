@@ -220,14 +220,14 @@ class WolneLekturySource(Source):
         base_args = BaseArgs(abort, self.browser, log, timeout)
         found_books = []
         if wolnelektury_id is None:
-            log.debug('Preliminary identification failed. Complex search starts')
+            log.info('Preliminary identification failed. Complex search starts')
             found_books = check_site_for_books(
                 base_args,
                 self.get_title_tokens(title),
                 self.get_author_tokens(authors)
             )
         else:
-            log.debug('Preliminary identification was a success')
+            log.info('Preliminary identification was a success')
             found_books = [wolnelektury_id]
 
         if abort.is_set():
@@ -274,10 +274,10 @@ class WolneLekturySource(Source):
         If the parameter get_best_cover is True and this plugin can get
         multiple covers, it should only get the "best" one.
         '''
-        log.debug('Downloading cover')
+        log.info('Downloading cover')
         if get_best_cover and (cover_url := self.get_cached_cover_url(identifiers)):
             result_queue.put((self, cover_url))
-            log.debug('Downloaded best cover')
+            log.info('Downloaded best cover')
             return None
 
         wolnelektury_id = identifiers.get(WOLNELEKTURY_ID)

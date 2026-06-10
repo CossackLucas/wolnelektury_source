@@ -74,7 +74,7 @@ def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata
     with access_data(browser.open(wolnelektury_url, timeout=timeout), log) as page:
         if abort.is_set():
             return None
-        log.debug(f'Page \'{wolnelektury_url}\' accessed and parsed')
+        log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
         read_data = page.read().decode(encoding='utf-8')
         me = __extract_metadata_xml(etree.fromstring(read_data))
 
@@ -88,7 +88,7 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
     '''
     abort, browser, log, timeout = base_args
 
-    log.debug(f"Getting cover urls for {wolnelektury_id}")
+    log.info(f"Getting cover urls for {wolnelektury_id}")
     if abort.is_set():
         return ()
     result: list[str] = []
@@ -96,7 +96,7 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
     source_url: str = __get_api_url(wolnelektury_id)
 
     with access_data(browser.open(source_url, timeout=timeout), log) as page:
-        log.debug("Parsing data")
+        log.info("Parsing data")
         parsed_data = json.load(page)
         for name in COVER_NAMES:
             if abort.is_set():
