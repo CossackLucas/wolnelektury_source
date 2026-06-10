@@ -31,7 +31,7 @@ _ = gettext.gettext
 load_translations()
 # pylint: enable=undefined-variable
 
-PLUGIN_VERSION = (0, 1, 0)
+PLUGIN_VERSION = (0, 2, 0)
 
 class WolneLekturySource(Source):
     '''
