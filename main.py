@@ -209,13 +209,13 @@ def __get_xml_url(wolnelektury_id: str) -> str:
 def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     me = Metadata('', '')
 
-    if book_title := __get_data_from_xml(parsed_data, 'title'):
+    if (book_title := __get_data_from_xml(parsed_data, 'title')) is not None:
         me.title = book_title
 
     book_authors = __get_authors_from_parsed_xml(parsed_data)
     me.authors = book_authors if len(book_authors) != 0 else [('Unknown')]
 
-    if book_lang := __get_data_from_xml(parsed_data, 'language'):
+    if (book_lang := __get_data_from_xml(parsed_data, 'language')) is not None:
         me.language = book_lang
 
     if book_date := __get_date_from_parsed_xml(parsed_data,'date'):
@@ -245,7 +245,7 @@ def __get_authors_from_parsed_xml(parsed_data: etree.Element) -> list[str]:
 
 def __get_date_from_parsed_xml(parsed_data: etree.Element, elemet: str) -> Optional[datetime]:
     found_date = ''
-    if not (found_date := __get_data_from_xml(parsed_data, elemet)):
+    if (found_date := __get_data_from_xml(parsed_data, elemet)) is not None:
         return None
     date_list = found_date.split('-')
     return datetime(int(date_list[0]), int(date_list[1]), int(date_list[2]))
