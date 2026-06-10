@@ -224,7 +224,14 @@ def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if book_abstract := __get_abstract(parsed_data):
         me.comments = book_abstract
 
+    # isbn is needed for calibre not to merge the results
+    # but the site publishes different isbns for different formats!
+    # ToDo: solve this issue
+    if (book_isbn := __get_isbn_from_parsed_xml(parsed_data)) is not None:
+        me.isbn = book_isbn
+
     me.publisher = 'Fundacja Nowoczesna Polska'
+    me.has_cover = True
 
     return me
 
@@ -243,9 +250,20 @@ def __get_authors_from_parsed_xml(parsed_data: etree.Element) -> list[str]:
 
     return result
 
-def __get_date_from_parsed_xml(parsed_data: etree.Element, elemet: str) -> Optional[datetime]:
+def __get_isbn_from_parsed_xml(parsed_data: etree.Element) -> Optional[str]:
+    # ToDo: Should check other ISBNs for other formats?
+    book_isbn = __get_data_from_xml(parsed_data, 'meta[@id=\'epub-id\']')
+    if book_isbn is None:
+        return book_isbn
+
+    # removing prefix ISBN-
+    book_isbn = book_isbn[5:]
+
+    return book_isbn.replace('-', '')
+
+def __get_date_from_parsed_xml(parsed_data: etree.Element, element: str) -> Optional[datetime]:
     found_date = ''
-    if (found_date := __get_data_from_xml(parsed_data, elemet)) is not None:
+    if (found_date := __get_data_from_xml(parsed_data, element)) is None:
         return None
     date_list = found_date.split('-')
     return datetime(int(date_list[0]), int(date_list[1]), int(date_list[2]))

@@ -31,7 +31,7 @@ _ = gettext.gettext
 load_translations()
 # pylint: enable=undefined-variable
 
-PLUGIN_VERSION = (0, 2, 0)
+PLUGIN_VERSION = (0, 2, 1)
 
 class WolneLekturySource(Source):
     '''
@@ -238,15 +238,15 @@ class WolneLekturySource(Source):
             return None
 
         if len(found_books) == 0:
-            return 'Book could not be identified on wolnelektury.pl'
+            return 'The book could not be identified on wolnelektury.pl'
 
         no_books = 0
         for book_id in found_books:
             if me := get_metadata(base_args, book_id):
-                # ToDo: For some reason I got only one result, even if mroe are found!
                 me.set_identifier(WOLNELEKTURY_ID, book_id)
-                result_queue.put(me)
                 no_books += 1
+                me.source_relevance = no_books
+                result_queue.put(me)
                 log.info(
                     f'Metadata for "{book_id}" id found on the site'
                 )
