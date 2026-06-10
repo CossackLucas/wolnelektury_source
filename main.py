@@ -82,7 +82,7 @@ def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata
 
 # 'cover' has to stay first to break for best cover to work properly
 COVER_NAMES = ('cover', 'simple_cover')
-def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=False) -> tuple:
+def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=False) -> list[str]:
     '''
     get cover's urls from wolnelektury.pl. If none are found, result is empty
     '''
@@ -107,7 +107,7 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
             if get_best_cover:
                 break
 
-    return tuple(result)
+    return result
 
 def check_site_for_books(
     base_args: BaseArgs,
