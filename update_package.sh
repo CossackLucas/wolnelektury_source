@@ -31,10 +31,17 @@ else
   exit 1
 fi
 
+mkdir -p packages
+
+# Avoiding accidental overwriting packaging - has to be consciously removed first
+if [ -e "packages/${plugin_name}_${version}.zip" ]; then
+    echo "Package for version $version already exist"
+    exit 1
+fi
+
 # preparing clean build catalogue for calibre
 rm -rf $build_dir
-mkdir $build_dir
-mkdir $build_dir/translations
+mkdir -p $build_dir/translations
 # finding all necessery files for clean build
 files=$(ls | grep "\.py")' '$(ls | grep "plugin-import-name")
 cp $files $build_dir
