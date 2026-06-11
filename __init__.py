@@ -28,7 +28,11 @@ from calibre_plugins.wolnelektury_source.main import get_metadata, get_cover_url
 _ = gettext.gettext
 
 # pylint: disable=undefined-variable
-load_translations()
+# required to run tests
+try:
+    load_translations()
+except NameError:
+    pass
 # pylint: enable=undefined-variable
 
 PLUGIN_VERSION = (0, 2, 1)
@@ -327,6 +331,39 @@ class WolneLekturySource(Source):
 
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
-# ToDo: tests
 if __name__ == "__main__":
-    pass
+    # To run these test use:
+    # calibre-debug -e __init__.py
+    # pylint: disable=import-error,ungrouped-imports
+    from calibre.ebooks.metadata.sources.test import authors_test, comments_test,\
+        pubdate_test, test_identify_plugin, title_test
+    tests = [
+        (  # A title, author search and pub date
+         {'title': 'Lalka', 'authors':['Bolesław Prus']},
+         [title_test('Lalka', exact=True),
+          authors_test(['Bolesław Prus']),
+          pubdate_test(2008, 12, 10)]
+        ),
+
+        (  # An id from the site
+         {'identifiers':{WOLNELEKTURY_ID: 'sienkiewicz-jako-sie-pan-lubomirski-nawrocil'}, },
+         [title_test('Jako się pan Lubomirski nawrócił i kościół w Tarnawie zbudował', exact=True),
+          authors_test(['Henryk Sienkiewicz'])]
+        ),
+
+        (  # An url from the site
+         {'identifiers':{'url': 'https://wolnelektury.pl/katalog/lektura/sienkiewicz-jako-sie-pan-lubomirski-nawrocil/'}, },
+         [title_test('Jako się pan Lubomirski nawrócił i kościół w Tarnawie zbudował', exact=True),
+          authors_test(['Henryk Sienkiewicz'])]),
+
+        # ToDo: multiple results
+        #({'title': 'Lalka',},
+        ( # Multiple authors and special symbol in title
+        {'title': 'manto',},
+        [title_test('#manto', exact=True),
+         authors_test([
+            'Łukasz Orbitowski', 'Jacek Świdziński']),
+        ])
+    ]
+    tests = tests[:]
+    test_identify_plugin(WolneLekturySource.name, tests)
