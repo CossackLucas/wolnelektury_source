@@ -47,6 +47,12 @@ if [ -e "packages/${plugin_name}_${version}.zip" ]; then
     exit 1
 fi
 
+# Making sure, that package is created from the correct, tagged version
+if [[ "v$version" != $(git describe --exact-match --tags) ]]; then
+    echo "Checkout correctly tagged version (v$version)"
+    exit 1
+fi
+
 # preparing clean build catalogue for calibre
 rm -rf $build_dir
 mkdir -p $build_dir/translations
