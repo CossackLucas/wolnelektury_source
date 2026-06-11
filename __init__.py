@@ -336,7 +336,7 @@ if __name__ == "__main__":
     # calibre-debug -e __init__.py
     # pylint: disable=import-error,ungrouped-imports
     from calibre.ebooks.metadata.sources.test import authors_test, comments_test,\
-        pubdate_test, test_identify_plugin, title_test
+        pubdate_test, test_identify_plugin, title_test, isbn_test
     tests = [
         (  # A title, author search and pub date
          {'title': 'Lalka', 'authors':['Bolesław Prus']},
@@ -356,13 +356,24 @@ if __name__ == "__main__":
          [title_test('Jako się pan Lubomirski nawrócił i kościół w Tarnawie zbudował', exact=True),
           authors_test(['Henryk Sienkiewicz'])]),
 
-        # ToDo: multiple results
-        #({'title': 'Lalka',},
-        ( # Multiple authors and special symbol in title
+        ( # Multiple authors, special symbol in title and isbn
         {'title': 'manto',},
         [title_test('#manto', exact=True),
          authors_test([
             'Łukasz Orbitowski', 'Jacek Świdziński']),
+        isbn_test('978-83-288-5848-0')
+        ]),
+
+        ( # No isbn and comments
+         {'identifiers':{WOLNELEKTURY_ID: 'napoj-cienisty-lalka'}, },
+         [title_test('Lalka', exact=True),
+         authors_test(['Bolesław Leśmian']),
+         lambda me: bool(me.comments is None and me.isbn is None)
+        ]),
+        ( # Non polish language book
+         {'identifiers': { WOLNELEKTURY_ID: 'nietzsche-richard-wagner-in-bayreuth'}, },
+         [title_test('Richard Wagner in Bayreuth', exact=True),
+         lambda me: bool(me.language == 'ger')
         ])
     ]
     tests = tests[:]
