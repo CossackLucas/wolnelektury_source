@@ -1,9 +1,17 @@
 #! /usr/bin/bash
 
-# ToDo: integrate tests, when they are ready
 if [[ $EUID == 0 ]]; then
   echo 'Should not be run as root.'
   exit 2
+fi
+
+# running tests
+calibre-debug -e __init__.py
+if [[ $? -eq 0 ]]; then
+    echo 'Tests passed'
+else
+    echo 'Tests failed'
+    exit 1
 fi
 
 plugin_dir=~/.config/calibre/plugins
