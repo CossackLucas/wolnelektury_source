@@ -18,14 +18,13 @@ import gettext
 
 # pylint: disable=import-error
 from calibre.ebooks.metadata.sources.base import Source, Option
+from calibre.utils.localization import _
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
 from calibre_plugins.wolnelektury_source.main import get_metadata, get_cover_urls, \
     BaseArgs, access_data, check_site_for_books, WOLNELEKTURY_ID
 # pylint: enable=import-error
-
-_ = gettext.gettext
 
 # pylint: disable=undefined-variable
 # required to run tests
@@ -45,19 +44,22 @@ class WolneLekturySource(Source):
     author = 'Łukasz Kozak'
     description = _('Downloading metadata and covers from site wolnelektury.pl')
     version = PLUGIN_VERSION
+    # ToDo: TBD, should be checked, it's first version with Python 3
+    minimum_calibre_version = (5, 0, 0) 
     supported_platforms = ['windows', 'osx', 'linux']
     capabilities = frozenset(['identify', 'cover'])
-    touched_fiedls = frozenset([
+    touched_fields = frozenset([
         'title',
         'authors',
         'language',
         'publisher',
-        'cover',
+        'pubdate',
         'comments',
-        WOLNELEKTURY_ID
+        f'identifier:{WOLNELEKTURY_ID}',
+        'identifier:isbn'
     ])
 
-    has_html_comments = False # ToDo: add as an option
+    has_html_comments = True # ToDo: add as an option
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
     cached_cover_url_is_reliable = True # ToDo: confirm
@@ -66,9 +68,14 @@ class WolneLekturySource(Source):
     auto_trim_covers = False # ToDo: confirm
     prefer_results_with_isbn = False
     options = (
+        Option('html_comments', 'bool', True, _('HTML in comments'),
+            _('Choose if comments\' formating should be downloaded as well')),
+        Option('prefered_cover', 'choices', 'cover_regular',
+           _('Prefered cover type'), _('Choose which cover type you prefere'),
+            {'cover_regular': _('Regular cover'), 'cover_simple': _('Simplified cover')}),
         # ToDo: can it be limited to max number?
         Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
-                      _('Maximal number of covers to download from the site')),
+                      _('Maximal number of covers to download from the site (up to 2)')),
     )
 
     def is_configured(self):
@@ -81,10 +88,16 @@ class WolneLekturySource(Source):
         #ToDo
         return True
 
-    def customization_help(self):
-        raise NotImplementedError
+    # ToDo: decide if should be removed, returns parent string anyway
+    #def customization_help(self):
+        #raise NotImplementedError
+        #return 'This plugin can only be customized using the GUI'
 
-    # ToDo: config_widget & save_settings, maybe validate
+    # ToDo: my own custom widget
+    def config_widget(self):
+        return super().config_widget()
+
+    # ToDo: save_settings, maybe validate
 
     # working methods
     def get_book_url(self, identifiers):
