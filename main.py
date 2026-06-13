@@ -28,10 +28,10 @@ from lxml.html import fromstring, tostring, Element
 # pylint: disable=import-error
 from calibre.ebooks.metadata.book.base import Metadata
 
+from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID
 from calibre_plugins.wolnelektury_source.config import config
 # pylint: enable=import-error
 
-WOLNELEKTURY_ID = 'wolnelektury_id'
 MAX_RESULTS = 3
 
 @contextmanager

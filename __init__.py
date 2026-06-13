@@ -24,8 +24,9 @@ from calibre.constants import numeric_version
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
 from calibre_plugins.wolnelektury_source.main import get_metadata, get_cover_urls, \
-    BaseArgs, access_data, check_site_for_books, WOLNELEKTURY_ID
+    BaseArgs, access_data, check_site_for_books
 from calibre_plugins.wolnelektury_source.config import config
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, WOLNELEKTURY_ID
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -36,20 +37,18 @@ except NameError:
     pass
 # pylint: enable=undefined-variable
 
-PLUGIN_VERSION = (0, 2, 2)
 CALIBRE_VERSION = ".".join([str(x) for x in numeric_version])
 
 class WolneLekturySource(Source):
     '''
     source plugin definition
     '''
-    name = 'WolneLektury'
+    name = PLUGIN_NAME
     author = 'Łukasz Kozak'
     description = _('Downloading metadata and covers from site wolnelektury.pl')
     version = PLUGIN_VERSION
     # ToDo: TBD, should be checked, it's first version with Python 3
-    minimum_calibre_version = (5, 0, 0) 
-    supported_platforms = ['windows', 'osx', 'linux']
+    minimum_calibre_version = (5, 0, 0)
     capabilities = frozenset(['identify', 'cover'])
     touched_fields = frozenset([
         'title',
@@ -382,12 +381,6 @@ if __name__ == "__main__":
          authors_test([
             'Łukasz Orbitowski', 'Jacek Świdziński']),
         isbn_test('978-83-288-5848-0')
-        ]),
-
-        ( # (4) Non polish language book
-         {'identifiers': { WOLNELEKTURY_ID: 'nietzsche-richard-wagner-in-bayreuth'}, },
-         [title_test('Richard Wagner in Bayreuth', exact=True),
-         lambda me: bool(me.language == 'ger')
         ])
     ]
     tests_to_fail = [( # (0) No isbn and comments

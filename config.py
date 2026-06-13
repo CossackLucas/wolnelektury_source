@@ -8,6 +8,8 @@ from typing import Optional
 from calibre.utils.config import JSONConfig
 from calibre.ebooks.metadata.sources.base import Option
 from calibre.utils.localization import _
+
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -23,7 +25,7 @@ class PluginConfig:
     class used in everything related to plugin's config
     '''
 # Localization is ~/.config/calibre/metadata_sources/WolneLektury.json
-    __config = JSONConfig('metadata_sources/WolneLektury.json')
+    __config = JSONConfig(f'metadata_sources/{PLUGIN_NAME}.json')
     __options = [
         Option('html_comments', 'bool', True, _('HTML in comments'),
             _('Choose if comments\' formating should be downloaded as well')),
