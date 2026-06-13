@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 12:23+0200\n"
-"PO-Revision-Date: 2026-06-13 12:24+0200\n"
+"POT-Creation-Date: 2026-06-13 15:51+0200\n"
+"PO-Revision-Date: 2026-06-13 15:58+0200\n"
 "Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
 "Language-Team: \n"
 "Language: pl\n"
@@ -21,38 +21,61 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: __init__.py:45
-msgid "Downloading metadata and covers from site wolnelektury.pl"
-msgstr "Pobieranie metadanych i okładek z portalu wolnelektury.pl"
-
-#: __init__.py:71
+#: config.py:28
 msgid "HTML in comments"
 msgstr "HTML w komentarzach"
 
-#: __init__.py:72
+#: config.py:29
 msgid "Choose if comments' formating should be downloaded as well"
 msgstr "Wybierz, czy komentarze mają także pobrać formatowanie w HTML"
 
-#: __init__.py:74
+#: config.py:31
 msgid "Prefered cover type"
 msgstr "Preferowany rodzaj okładki"
 
-#: __init__.py:74
+#: config.py:31
 msgid "Choose which cover type you prefere"
 msgstr "Wybierz preferowany rodzaj okładki"
 
-#: __init__.py:75
+#: config.py:32
 msgid "Regular cover"
 msgstr "Zwykła okładka"
 
-#: __init__.py:75
+#: config.py:32
 msgid "Simplified cover"
 msgstr "Uproszczona okładka"
 
-#: __init__.py:77
+#: config.py:34
 msgid "Maximal number of covers to download"
 msgstr "Maksymalna liczba okładek do pobrania"
 
-#: __init__.py:78
+#: config.py:35
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr "Maksymalna liczba okładek do pobrania z portalu (do 2)"
+
+#: __init__.py:48
+msgid "Downloading metadata and covers from site wolnelektury.pl"
+msgstr "Pobieranie metadanych i okładek z portalu wolnelektury.pl"
+
+#: __init__.py:69
+msgid "Calibre"
+msgstr "Calibre"
+
+#: __init__.py:70
+msgid "Plugin version"
+msgstr "Wersja pluginu"
+
+#: __init__.py:72
+msgid ""
+"<b>Warning</b>: ISBN could be pointing to different file format edition of "
+"the book"
+msgstr ""
+"<b>Ostrzeżenie</b>: ISBN może wskazywać na wydanie książki w innym formacie"
+
+#: __init__.py:70
+msgid ""
+"Please report bugs through the <a href=\"https://www.mobileread.com/"
+"\">MobileRead</a> forum.<br>"
+msgstr ""
+"Błędy proszę zgłaszać przez forum <a href=\"https://www.mobileread.com/"
+"\">MobileRead</a>.<br>"
