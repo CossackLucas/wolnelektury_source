@@ -70,10 +70,11 @@ class WolneLekturySource(Source):
     options = (
         Option('html_comments', 'bool', True, _('HTML in comments'),
             _('Choose if comments\' formating should be downloaded as well')),
-        Option('prefered_cover', 'choices', 'cover_regular',
+        Option('prefered_cover', 'choices', 'cover',
            _('Prefered cover type'), _('Choose which cover type you prefere'),
-            {'cover_regular': _('Regular cover'), 'cover_simple': _('Simplified cover')}),
+            {'cover': _('Regular cover'), 'simple_cover': _('Simplified cover')}),
         # ToDo: can it be limited to max number?
+        # ToDo: bug - as Google image plugin uses the same name for preference, it has to be validated earlier
         Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                       _('Maximal number of covers to download from the site (up to 2)')),
     )
@@ -320,7 +321,8 @@ class WolneLekturySource(Source):
         base_args = BaseArgs(abort, self.browser, log, timeout)
         for book_id in found_books:
             urls.extend(get_cover_urls(base_args, wolnelektury_id, get_best_cover))
-        log.info(f'{len(urls)} cover urls found')
+
+        log.info(f'Found cover urls: {urls}')
 
         if abort.is_set():
             return None

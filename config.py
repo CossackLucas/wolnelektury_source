@@ -20,8 +20,16 @@ class PluginConfig:
             return True
 
         if (value := self.config.get(opt)) is not None:
+            # ToDo: should be validated on input
+            if opt == 'max_covers':
+                value = self.__clean_max_covers(value)
             return value
 
         raise ValueError(f'\'{opt}\' not among allowed values')
+
+    def __clean_max_covers(self, value: int) -> int:
+        value = max(value, 1)
+        value = min(value, 2)
+        return value
 
 prefs = PluginConfig()

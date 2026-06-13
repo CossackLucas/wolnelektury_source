@@ -96,17 +96,30 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
     result: list[str] = []
 
     source_url: str = __get_api_url(wolnelektury_id)
+    prefered_cover = prefs.get_prefs('prefered_cover')
+ 
+    user_cover_names = [ prefered_cover ]
+    # ToDo: is there less hacky way to do it?
+    user_cover_names.extend(set(COVER_NAMES) - set(user_cover_names))
+    log.info(f'Cover types order is: {user_cover_names}')
+
+    max_covers = prefs.get_prefs('max_covers')
+    log.info(f'max_covers preference is {max_covers}')
 
     with access_data(browser.open(source_url, timeout=timeout), log) as page:
-        log.info("Parsing data")
+        log.info("Parsing data for covers")
         parsed_data = json.load(page)
-        for name in COVER_NAMES:
+        for i, name in enumerate(user_cover_names):
+            if max_covers == i:
+                log.info(f'Stopping search for covers early at {i}th search, found {len(result)} url(s)')
+                break
             if abort.is_set():
                 break
             url = parsed_data.get(name)
             if url is not None:
                 result.append(url)
             if get_best_cover:
+                log.info('Stopping search for covers early, as best covers was found')
                 break
 
     return result
