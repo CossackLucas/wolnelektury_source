@@ -28,7 +28,7 @@ from lxml.html import fromstring, tostring, Element
 # pylint: disable=import-error
 from calibre.ebooks.metadata.book.base import Metadata
 
-from calibre_plugins.wolnelektury_source.config import prefs
+from calibre_plugins.wolnelektury_source.config import config
 # pylint: enable=import-error
 
 WOLNELEKTURY_ID = 'wolnelektury_id'
@@ -96,14 +96,14 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
     result: list[str] = []
 
     source_url: str = __get_api_url(wolnelektury_id)
-    prefered_cover = prefs.get_prefs('prefered_cover')
+    prefered_cover = config.get_prefs('prefered_cover')
  
     user_cover_names = [ prefered_cover ]
     # ToDo: is there less hacky way to do it?
     user_cover_names.extend(set(COVER_NAMES) - set(user_cover_names))
     log.info(f'Cover types order is: {user_cover_names}')
 
-    max_covers = prefs.get_prefs('max_covers')
+    max_covers = config.get_prefs('max_covers')
     log.info(f'max_covers preference is {max_covers}')
 
     with access_data(browser.open(source_url, timeout=timeout), log) as page:
@@ -233,10 +233,10 @@ def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if (book_lang := __get_data_from_xml(parsed_data, 'language')) is not None:
         me.language = book_lang
 
-    if prefs.get_prefs('pubdate') and (book_date := __get_date_from_parsed_xml(parsed_data,'date')):
+    if config.get_prefs('pubdate') and (book_date := __get_date_from_parsed_xml(parsed_data,'date')):
         me.pubdate = book_date
 
-    if prefs.get_prefs('comments') and (book_abstract := __get_abstract(parsed_data)):
+    if config.get_prefs('comments') and (book_abstract := __get_abstract(parsed_data)):
         me.comments = book_abstract
 
     # isbn is needed for calibre not to merge the results
@@ -245,7 +245,7 @@ def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if (book_isbn := __get_isbn_from_parsed_xml(parsed_data)) is not None:
         me.isbn = book_isbn
 
-    if prefs.get_prefs('publisher'):
+    if config.get_prefs('publisher'):
         me.publisher = 'Fundacja Nowoczesna Polska'
 
     # ToDo: should be checked?
@@ -301,7 +301,7 @@ def __get_abstract(parsed_data: etree.Element) -> Optional[str]:
     for paragraph in abstract:
         if paragraph.tag != 'akap':
             continue
-        if prefs.get_prefs('html_comments'):
+        if config.get_prefs('html_comments'):
             pseudo_html = tostring(paragraph, encoding="utf-8").decode(encoding="utf-8")
             result += __get_html_formatting(pseudo_html)
         else:

@@ -17,13 +17,15 @@ except ImportError:
 import gettext
 
 # pylint: disable=import-error
-from calibre.ebooks.metadata.sources.base import Source, Option
+from calibre.ebooks.metadata.sources.base import Source
 from calibre.utils.localization import _
+from calibre.constants import numeric_version
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
 from calibre_plugins.wolnelektury_source.main import get_metadata, get_cover_urls, \
     BaseArgs, access_data, check_site_for_books, WOLNELEKTURY_ID
+from calibre_plugins.wolnelektury_source.config import config
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -35,6 +37,7 @@ except NameError:
 # pylint: enable=undefined-variable
 
 PLUGIN_VERSION = (0, 2, 2)
+CALIBRE_VERSION = ".".join([str(x) for x in numeric_version])
 
 class WolneLekturySource(Source):
     '''
@@ -63,20 +66,15 @@ class WolneLekturySource(Source):
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
     cached_cover_url_is_reliable = True # ToDo: confirm
-    config_help_message = None # ToDo
+    # ToDo: probably should mention github 
+    config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • \
+        '+_('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • '+_('Please ' \
+        'report bugs through the <a href="https://www.mobileread.com/">MobileRead</a> forum.<br>') \
+        + _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
     can_get_multiple_covers = True
     auto_trim_covers = False # ToDo: confirm
     prefer_results_with_isbn = False
-    options = (
-        Option('html_comments', 'bool', True, _('HTML in comments'),
-            _('Choose if comments\' formating should be downloaded as well')),
-        Option('prefered_cover', 'choices', 'cover',
-           _('Prefered cover type'), _('Choose which cover type you prefere'),
-            {'cover': _('Regular cover'), 'simple_cover': _('Simplified cover')}),
-        # ToDo: can it be limited to max number?
-        Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
-                      _('Maximal number of covers to download from the site (up to 2)')),
-    )
+    options = config.get_options()
 
     def is_configured(self):
         '''
