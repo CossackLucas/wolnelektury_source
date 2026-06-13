@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-10 06:49+0200\n"
+"POT-Creation-Date: 2026-06-13 12:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,14 +17,38 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: __init__.py:38
+#: __init__.py:45
 msgid "Downloading metadata and covers from site wolnelektury.pl"
 msgstr ""
 
-#: __init__.py:62
+#: __init__.py:71
+msgid "HTML in comments"
+msgstr ""
+
+#: __init__.py:72
+msgid "Choose if comments' formating should be downloaded as well"
+msgstr ""
+
+#: __init__.py:74
+msgid "Prefered cover type"
+msgstr ""
+
+#: __init__.py:74
+msgid "Choose which cover type you prefere"
+msgstr ""
+
+#: __init__.py:75
+msgid "Regular cover"
+msgstr ""
+
+#: __init__.py:75
+msgid "Simplified cover"
+msgstr ""
+
+#: __init__.py:77
 msgid "Maximal number of covers to download"
 msgstr ""
 
-#: __init__.py:63
-msgid "Maximal number of covers to download from the site"
+#: __init__.py:78
+msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr ""
