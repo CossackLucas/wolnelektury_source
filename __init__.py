@@ -34,7 +34,7 @@ except NameError:
     pass
 # pylint: enable=undefined-variable
 
-PLUGIN_VERSION = (0, 2, 1)
+PLUGIN_VERSION = (0, 2, 2)
 
 class WolneLekturySource(Source):
     '''
@@ -85,13 +85,7 @@ class WolneLekturySource(Source):
         return True
 
     def is_customizable(self):
-        #ToDo
         return True
-
-    # ToDo: decide if should be removed, returns parent string anyway
-    #def customization_help(self):
-        #raise NotImplementedError
-        #return 'This plugin can only be customized using the GUI'
 
     # ToDo: my own custom widget
     def config_widget(self):
@@ -263,6 +257,7 @@ class WolneLekturySource(Source):
                 me.set_identifier(WOLNELEKTURY_ID, book_id)
                 no_books += 1
                 me.source_relevance = no_books
+                self.clean_downloaded_metadata(me)
                 result_queue.put(me)
                 log.info(
                     f'Metadata for "{book_id}" id found on the site'

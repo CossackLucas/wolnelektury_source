@@ -27,6 +27,8 @@ from lxml.html import fromstring, Element
 
 # pylint: disable=import-error
 from calibre.ebooks.metadata.book.base import Metadata
+
+from calibre_plugins.wolnelektury_source.config import prefs
 # pylint: enable=import-error
 
 WOLNELEKTURY_ID = 'wolnelektury_id'
@@ -218,10 +220,10 @@ def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if (book_lang := __get_data_from_xml(parsed_data, 'language')) is not None:
         me.language = book_lang
 
-    if book_date := __get_date_from_parsed_xml(parsed_data,'date'):
+    if prefs.get_prefs('pubdate') and (book_date := __get_date_from_parsed_xml(parsed_data,'date')):
         me.pubdate = book_date
 
-    if book_abstract := __get_abstract(parsed_data):
+    if prefs.get_prefs('comments') and (book_abstract := __get_abstract(parsed_data)):
         me.comments = book_abstract
 
     # isbn is needed for calibre not to merge the results
@@ -230,7 +232,10 @@ def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if (book_isbn := __get_isbn_from_parsed_xml(parsed_data)) is not None:
         me.isbn = book_isbn
 
-    me.publisher = 'Fundacja Nowoczesna Polska'
+    if prefs.get_prefs('publisher'):
+        me.publisher = 'Fundacja Nowoczesna Polska'
+
+    # ToDo: should be checked?
     me.has_cover = True
 
     return me
@@ -277,9 +282,12 @@ def __standardize_author(reversed_name: str) -> str:
 def __get_abstract(parsed_data: etree.Element) -> Optional[str]:
     result: str = ''
     for paragraph in parsed_data.findall('.//akap'):
-        # ToDo: use it to get test with formatting
-        #pseudo_html = tostring(paragraph, encoding="utf-8").decode(encoding="utf-8")
-        result += ''.join(paragraph.itertext())
-        result += '\n\n'
+        if prefs.get_prefs('html_comments'):
+            # ToDo: use it to get text with formatting
+            #pseudo_html = tostring(paragraph, encoding="utf-8").decode(encoding="utf-8")
+            raise NotImplementedError('Extracting html formated abstract not implemented')
+        else:
+            result += ''.join(paragraph.itertext())
+            result += '\n\n'
 
     return None if len(result) == 0 else result
