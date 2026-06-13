@@ -28,7 +28,6 @@ from lxml.html import fromstring, tostring, Element
 # pylint: disable=import-error
 from calibre.ebooks.metadata.book.base import Metadata
 
-from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID
 from calibre_plugins.wolnelektury_source.config import config
 # pylint: enable=import-error
 
@@ -124,6 +123,12 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
 
     return result
 
+def __build_search_query(query_tokens: list[str], category: str) -> str:
+    if category not in set(('book', 'author')):
+        raise ValueError(f'Wrong category {category}')
+    return 'https://wolnelektury.pl/szukaj/?q=' + quote_plus(' '.join(query_tokens)) \
+        + '=&category=' + category
+
 def check_site_for_books(
     base_args: BaseArgs,
     title_tokens: list[str],
@@ -139,8 +144,8 @@ def check_site_for_books(
 
     if abort.is_set():
         return []
-    # ToDo: should we used queries using =&category=book ?
-    title_query: str = 'https://wolnelektury.pl/szukaj/?q=' + quote_plus(' '.join(title_tokens))
+
+    title_query: str = __build_search_query(title_tokens, 'book')
     log.info(f'Checking query: {title_query}')
 
     found_books: list[str] = []
