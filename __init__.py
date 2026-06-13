@@ -242,15 +242,11 @@ class WolneLekturySource(Source):
         if abort.is_set():
             return None
 
-        base_args = BaseArgs(abort, self.browser, log, timeout)
+        base_args = BaseArgs(abort, log, self, title, authors, identifiers, timeout)
         found_books = []
         if wolnelektury_id is None:
             log.info('Preliminary identification failed. Complex search starts')
-            found_books = check_site_for_books(
-                base_args,
-                self.get_title_tokens(title),
-                self.get_author_tokens(authors)
-            )
+            found_books = check_site_for_books(base_args)
         else:
             log.info('Preliminary identification was a success')
             found_books = [wolnelektury_id]
@@ -323,7 +319,7 @@ class WolneLekturySource(Source):
             return 'No books were identified to find covers'
 
         urls: list[str] = []
-        base_args = BaseArgs(abort, self.browser, log, timeout)
+        base_args = BaseArgs(abort, log, self, title, authors, identifiers, timeout)
         for book_id in found_books:
             urls.extend(get_cover_urls(base_args, wolnelektury_id, get_best_cover))
 

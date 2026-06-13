@@ -59,13 +59,15 @@ def access_data(thing, log=None):
     finally:
         thing.close()
 
-BaseArgs = namedtuple('BaseArgs', ['abort', 'browser', 'log', 'timeout'])
+BaseArgs = namedtuple('BaseArgs', ['abort', 'log', 'plugin', 'title', 'authors',\
+   'identifiers', 'timeout'])
 
 def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata]:
     '''
     gets metadata from wolnelektury for given book by it's id
     '''
-    abort, browser, log, timeout = base_args
+    abort, log, plugin, _, _, _, timeout = base_args
+    browser = plugin.browser 
 
     if abort.is_set():
         return None
@@ -87,7 +89,8 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
     '''
     get cover's urls from wolnelektury.pl. If none are found, result is empty
     '''
-    abort, browser, log, timeout = base_args
+    abort, log, plugin, _, _, _, timeout = base_args
+    browser = plugin.browser
 
     log.info(f"Getting cover urls for {wolnelektury_id}")
     if abort.is_set():
@@ -96,7 +99,7 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
 
     source_url: str = __get_api_url(wolnelektury_id)
     prefered_cover = config.get_prefs('prefered_cover')
- 
+
     user_cover_names = [ prefered_cover ]
     # ToDo: is there less hacky way to do it?
     user_cover_names.extend(set(COVER_NAMES) - set(user_cover_names))
@@ -110,7 +113,9 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
         parsed_data = json.load(page)
         for i, name in enumerate(user_cover_names):
             if max_covers == i:
-                log.info(f'Stopping search for covers early at {i}th search, found {len(result)} url(s)')
+                log.info(
+                    f'Stopping search for covers early at {i}th search, found {len(result)} url(s)'
+                    )
                 break
             if abort.is_set():
                 break
@@ -130,9 +135,7 @@ def __build_search_query(query_tokens: list[str], category: str) -> str:
         + '=&category=' + category
 
 def check_site_for_books(
-    base_args: BaseArgs,
-    title_tokens: list[str],
-    author_tokens: list[str]
+    base_args: BaseArgs
     ) -> list[str]:
     '''
     perform search on wolnelektury site, and returns ids
@@ -140,11 +143,13 @@ def check_site_for_books(
     proposed algorithm: check by title, the those results by author
     then author and look for a book
     '''
-    abort, browser, log, timeout = base_args
+    abort, log, plugin, title, authors, identifiers, timeout = base_args
+    browser = plugin.browser
 
     if abort.is_set():
         return []
 
+    title_tokens: list[str] = list(plugin.get_title_tokens(title))
     title_query: str = __build_search_query(title_tokens, 'book')
     log.info(f'Checking query: {title_query}')
 
@@ -154,24 +159,26 @@ def check_site_for_books(
             return []
         parsed_data = fromstring(page.read().decode(encoding='utf-8'))
         found_books = __extract_books(parsed_data)
-        log.info(f'{len(found_books)} book(s) were found') 
+        log.info(f'{len(found_books)} book(s) were found')
         # ToDo: finish check
-        #found_books = __check_found_books(found_books, author_tokens)
+        #if len(authors) != 0:
+            #found_books = __check_found_books(found_books, authors)
+            #pass
 
     if len(found_books) != 0:
         return found_books
 
-    return []
-
-    # ToDo: expand search
-    raise NotImplementedError('Looking for an author should be checked')
-    author_query: str = 'https://wolnelektury.pl/szukaj/?q=' + quote_plus(' '.join(author_tokens))
-    with access_data(browser(author_query, timeout=timeout), log) as page:
+    author_query: str = __build_search_query(plugin.get_author_tokens(authors), 'author')
+    found_authors = []
+    with access_data(browser.open(author_query, timeout=timeout), log) as page:
         found_authors = __extract_authors(page)
         if abort.is_set():
             return []
 
-        found_books = __extract_authors_books(found_authors)
+    for author_id in found_authors:
+        author_url = __get_authors_url(author_id)
+        with access_data(browser.open(author_url, timeout=timeout), log) as page:
+            found_books.extend(__extract_authors_books(page, title_tokens))
 
     return found_books
 
@@ -197,21 +204,45 @@ def __check_found_books(found_books: list[str], author_tokens: list[str]) -> lis
     # ToDo: check, if authors are matching for given book
     for book in found_books:
         print(book)
+
     raise NotImplementedError(f'__check_found_books not implemented, {author_tokens}')
     return result
 
+AUTHOR_ID_REGEX = re.compile(r'/katalog/autor/([a-z\-]+)/')
+
 def __extract_authors(page) -> list[str]:
     result = []
-    raise NotImplementedError(f'__extract_authors not implemented, {page}')
-    # ToDo: search for  <ul class="c-search-result c-search-result-author">
+    read_data = page.read().decode(encoding='utf-8')
+    parsed_data = fromstring(read_data)
+
+    xpath: str = './/ul[@class=\'c-search-result c-search-result-author\']'
+    for author in parsed_data.find(xpath):
+        url = author[0].get('href')
+        if (found := AUTHOR_ID_REGEX.match(url)) is not None:
+            result.append(found[1])
+
     return result
 
-def __extract_authors_books(authors_list: list[str]) -> list[str]:
+def __extract_authors_books(page, title_tokens: list[str]) -> list[str]:
     result = []
-    # ToDo: check <article class="l-books__item book-container-activator" data-pop="-79" data-longpress="hover">
-    for author in authors_list:
-        print(author)
-    raise NotImplementedError('__extract_authors_book not implemented')
+    read_data = page.read().decode(encoding='utf-8')
+    parsed_data = fromstring(read_data)
+    not_check_tokens = len(title_tokens) != 0
+
+    xpath:str = './/article[@class=\'l-books__item book-container-activator\']'
+    no_found = MAX_RESULTS
+    for book in parsed_data.findall(xpath):
+        if no_found == 0:
+            break
+        no_found -= 1
+        book_url: str = book[0][0].get('href')
+        if (found := ID_REGEX.match(book_url)) is None:
+            continue
+        for word in found[1].split('-'):
+            if not_check_tokens and (word not in title_tokens):
+                continue
+            result.append(found[1])
+
     return result
 
 def __get_api_url(wolnelektury_id: str) -> str:
@@ -225,6 +256,12 @@ def __get_xml_url(wolnelektury_id: str) -> str:
     Generate url for data xml file from wolnelektury id (nothing is checked)
     '''
     return f'https://wolnelektury.pl/media/book/xml/{wolnelektury_id}.xml'
+
+def __get_authors_url(wolnelektury_id: str) -> str:
+    ''' 
+    Generate url for author's page on wolnelektury id (nothing is checked)
+    '''
+    return f'https://wolnelektury.pl/katalog/autor/{wolnelektury_id}/'
 
 def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     me = Metadata('', '')
