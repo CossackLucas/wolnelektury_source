@@ -74,7 +74,6 @@ class WolneLekturySource(Source):
            _('Prefered cover type'), _('Choose which cover type you prefere'),
             {'cover': _('Regular cover'), 'simple_cover': _('Simplified cover')}),
         # ToDo: can it be limited to max number?
-        # ToDo: bug - as Google image plugin uses the same name for preference, it has to be validated earlier
         Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                       _('Maximal number of covers to download from the site (up to 2)')),
     )
@@ -86,13 +85,26 @@ class WolneLekturySource(Source):
         return True
 
     def is_customizable(self):
+        '''
+        Done
+        '''
         return True
 
     # ToDo: my own custom widget
-    def config_widget(self):
-        return super().config_widget()
+    #def config_widget(self):
+        #return super().config_widget()
 
-    # ToDo: save_settings, maybe validate
+    def save_settings(self, config_widget):
+        '''
+        needed as 'max_covers' already used and if left as 0, calibre remembers it and shows no covers
+        '''
+        def clear_max_covers(value: int) -> int:
+            value = max(value, 1)
+            value = min(value, 2)
+            return value
+
+        super().save_settings(config_widget)
+        self.prefs['max_covers'] = clear_max_covers(self.prefs['max_covers'])
 
     # working methods
     def get_book_url(self, identifiers):
