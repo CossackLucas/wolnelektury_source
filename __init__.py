@@ -261,12 +261,10 @@ class WolneLekturySource(Source):
         if len(found_books) == 0:
             return 'The book could not be identified on wolnelektury.pl'
 
-        no_books = 0
-        for book_id in found_books:
+        for i, book_id in enumerate(found_books, 1):
             if me := get_metadata(base_args, book_id):
                 me.set_identifier(WOLNELEKTURY_ID, book_id)
-                no_books += 1
-                me.source_relevance = no_books
+                me.source_relevance = i
                 self.clean_downloaded_metadata(me)
                 result_queue.put(me)
                 log.info(
@@ -278,8 +276,6 @@ class WolneLekturySource(Source):
                 )
             if abort.is_set():
                 return None
-
-        log.info(f'{no_books} books metadata were downloaded')
 
         return None
 
