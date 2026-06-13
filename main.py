@@ -23,7 +23,7 @@ from socket import gaierror
 
 # lxml.etree does not have exposed c-module
 from lxml import etree
-from lxml.html import fromstring, Element
+from lxml.html import fromstring, tostring, Element
 
 # pylint: disable=import-error
 from calibre.ebooks.metadata.book.base import Metadata
@@ -294,13 +294,29 @@ def __standardize_author(reversed_name: str) -> str:
 
 def __get_abstract(parsed_data: etree.Element) -> Optional[str]:
     result: str = ''
-    for paragraph in parsed_data.findall('.//akap'):
+    abstract = parsed_data.find('.//abstrakt')
+    if abstract is None:
+        return None
+
+    for paragraph in abstract:
+        if paragraph.tag != 'akap':
+            continue
         if prefs.get_prefs('html_comments'):
-            # ToDo: use it to get text with formatting
-            #pseudo_html = tostring(paragraph, encoding="utf-8").decode(encoding="utf-8")
-            raise NotImplementedError('Extracting html formated abstract not implemented')
+            pseudo_html = tostring(paragraph, encoding="utf-8").decode(encoding="utf-8")
+            result += __get_html_formatting(pseudo_html)
         else:
             result += ''.join(paragraph.itertext())
             result += '\n\n'
 
     return None if len(result) == 0 else result
+
+def __get_html_formatting(data: str) -> str:
+    def replace_element(data: str, old: str, new: str) -> str:
+        tmp_str = data.replace(f'<{old}>', f'<{new}>')
+        return tmp_str.replace(f'</{old}>', f'</{new}>')
+
+    tmp_str = replace_element(data, 'akap', 'p')
+
+    tmp_str = replace_element(tmp_str, 'tytul_dziela', 'i')
+
+    return tmp_str
