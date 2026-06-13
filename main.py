@@ -311,15 +311,9 @@ def __get_authors_from_parsed_xml(parsed_data: etree.Element) -> list[str]:
     return result
 
 def __get_isbn_from_parsed_xml(parsed_data: etree.Element) -> Optional[str]:
-    # ToDo: Should check other ISBNs for other formats?
     book_isbn = __get_data_from_xml(parsed_data, 'meta[@id=\'epub-id\']')
-    if book_isbn is None:
-        return book_isbn
 
-    # removing prefix ISBN-
-    book_isbn = book_isbn[5:]
-
-    return book_isbn.replace('-', '')
+    return book_isbn
 
 def __get_date_from_parsed_xml(parsed_data: etree.Element, element: str) -> Optional[datetime]:
     found_date = ''
