@@ -351,6 +351,7 @@ class WolneLekturySource(Source):
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
 if __name__ == "__main__":
+    # ToDo: redirect standard out for the duration of tests?
     # To run these test use:
     # calibre-debug -e __init__.py
     # pylint: disable=import-error,ungrouped-imports

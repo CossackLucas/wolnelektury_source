@@ -18,7 +18,7 @@ plugin_dir=~/.config/calibre/plugins
 build_dir=.build/wolnelektury/
 
 # version detection
-version="$(grep "PLUGIN_VERSION = " __init__.py)"
+version="$(grep "PLUGIN_VERSION = " consts.py)"
 pattern="\(([0-9]+)\,\s*([0-9]+)\,\s*([0-9]+)\)"
 
 if [[ $version =~ $pattern ]]; then
@@ -29,8 +29,8 @@ else
 fi
 
 # name detection
-plugin_name="$(grep "name = " __init__.py)"
-pattern="name = '(.*)'"
+plugin_name="$(grep "PLUGIN_NAME = " consts.py)"
+pattern="PLUGIN_NAME = '(.*)'"
 
 if [[ $plugin_name =~ $pattern ]]; then
   plugin_name="${BASH_REMATCH[1]}"
