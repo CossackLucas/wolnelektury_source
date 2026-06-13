@@ -1,5 +1,5 @@
 '''
-Metadata source plugin using wolnelektury.pl page
+Metadata source plugin using wolnelektury.pl page as source
 Main definition file
 '''
 import re
@@ -61,7 +61,7 @@ class WolneLekturySource(Source):
         'identifier:isbn'
     ])
 
-    has_html_comments = True # ToDo: add as an option
+    has_html_comments = True
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
     cached_cover_url_is_reliable = True # ToDo: confirm

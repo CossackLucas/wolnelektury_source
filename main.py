@@ -123,7 +123,7 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
             if url is not None:
                 result.append(url)
             if get_best_cover:
-                log.info('Stopping search for covers early, as best covers was found')
+                log.info('Stopping search for covers early, as best cover was found')
                 break
 
     return result
@@ -275,15 +275,13 @@ def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if (book_lang := __get_data_from_xml(parsed_data, 'language')) is not None:
         me.language = book_lang
 
-    if config.get_prefs('pubdate') and (book_date := __get_date_from_parsed_xml(parsed_data,'date')):
+    if config.get_prefs('pubdate') and \
+        (book_date := __get_date_from_parsed_xml(parsed_data,'date')):
         me.pubdate = book_date
 
     if config.get_prefs('comments') and (book_abstract := __get_abstract(parsed_data)):
         me.comments = book_abstract
 
-    # isbn is needed for calibre not to merge the results
-    # but the site publishes different isbns for different formats!
-    # ToDo: solve this issue
     if (book_isbn := __get_isbn_from_parsed_xml(parsed_data)) is not None:
         me.isbn = book_isbn
 
