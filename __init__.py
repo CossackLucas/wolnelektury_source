@@ -47,8 +47,8 @@ class WolneLekturySource(Source):
     author = 'Łukasz Kozak'
     description = _('Downloading metadata and covers from site wolnelektury.pl')
     version = PLUGIN_VERSION
-    # ToDo: TBD, should be checked, it's first version with Python 3
-    minimum_calibre_version = (5, 0, 0)
+    # 0.3.0 checked with 6.12
+    minimum_calibre_version = (6, 12, 0)
     capabilities = frozenset(['identify', 'cover'])
     touched_fields = frozenset([
         'title',
@@ -74,6 +74,7 @@ class WolneLekturySource(Source):
     auto_trim_covers = False # ToDo: confirm
     prefer_results_with_isbn = False
     options = config.get_options()
+    prefs = config.get_prefs()
 
     def is_configured(self):
         '''

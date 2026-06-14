@@ -37,7 +37,14 @@ class PluginConfig:
                       _('Maximal number of covers to download from the site (up to 2)')),
     ]
 
-    def get_prefs(self, opt: str) -> Optional[bool|str|int]:
+    def __init__(self):
+        self.__config.defaults['Options'] = {
+            'html_comments': True,
+            'prefered_cover': 'cover',
+            'max_covers': 2
+        }
+
+    def get_pref(self, opt: str) -> Optional[bool|str|int]:
         '''
         Returns value of requested preference
         If it's one of the ignore_fields, return True if the field should be extracted
@@ -55,6 +62,12 @@ class PluginConfig:
             return value
 
         raise ValueError(f'\'{opt}\' not among allowed values')
+
+    def get_prefs(self) -> dict:
+        '''
+        return the entire config dictionary
+        '''
+        return self.__config
 
     def get_options(self) -> list[Option]:
         '''
