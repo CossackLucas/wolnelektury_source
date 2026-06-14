@@ -215,7 +215,10 @@ def __extract_authors(page) -> list[str]:
     parsed_data = fromstring(read_data)
 
     xpath: str = './/ul[@class=\'c-search-result c-search-result-author\']'
-    for author in parsed_data.find(xpath):
+    author_data = parsed_data.find(xpath)
+    if author_data is None:
+        author_data = []
+    for author in author_data:
         url = author[0].get('href')
         if (found := AUTHOR_ID_REGEX.match(url)) is not None:
             result.append(found[1])
