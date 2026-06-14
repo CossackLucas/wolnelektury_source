@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-14 15:19+0200\n"
-"PO-Revision-Date: 2026-06-14 15:19+0200\n"
+"POT-Creation-Date: 2026-06-14 20:18+0200\n"
+"PO-Revision-Date: 2026-06-14 20:19+0200\n"
 "Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
 "Language-Team: \n"
 "Language: pl\n"
@@ -53,31 +53,31 @@ msgstr "Maksymalna liczba okładek do pobrania"
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr "Maksymalna liczba okładek do pobrania z portalu (do 2)"
 
-#: __init__.py:48
+#: __init__.py:46
 msgid "Download metadata and covers from site wolnelektury.pl"
 msgstr "Pobieranie metadanych i okładek z portalu wolnelektury.pl"
 
-#: __init__.py:68
+#: __init__.py:67
 msgid "Calibre"
 msgstr "Calibre"
 
-#: __init__.py:69
+#: __init__.py:68
 msgid "Plugin version"
 msgstr "Wersja pluginu"
 
-#: __init__.py:70
+#: __init__.py:69
 msgid "Please report bugs through the"
 msgstr "Błędy proszę zgłaszać przez forum"
 
-#: __init__.py:71
+#: __init__.py:70
 msgid " forum or "
 msgstr " albo "
 
-#: __init__.py:72
+#: __init__.py:71
 msgid "."
 msgstr "."
 
-#: __init__.py:73
+#: __init__.py:72
 msgid ""
 "<b>Warning</b>: ISBN could be pointing to different file format edition of "
 "the book"

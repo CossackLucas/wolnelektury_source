@@ -11,15 +11,9 @@ from collections import namedtuple
 from datetime import datetime
 
 try:
-    from urllib.error import HTTPError, URLError
-except ImportError:
-    from urllib import HTTPError, URLError
-try:
     from urllib.parse import quote_plus
 except ImportError:
     from urlib import quote_plus
-
-from socket import gaierror
 
 # lxml.etree does not have exposed c-module
 from lxml import etree
@@ -40,10 +34,6 @@ def access_data(thing: Callable, log=None):
     '''
     try:
         yield thing
-    #ToDo: URLError and gaierror do not work for browser, crash still happens when there's not connection
-    except (HTTPError, URLError, gaierror) as e:
-        if log is not None:
-            log.exception(f'Network error:\n{e}')
     except AttributeError as e:
         if log is not None:
             log.exception(f'{e}')

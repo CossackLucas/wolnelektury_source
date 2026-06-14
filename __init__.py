@@ -14,8 +14,6 @@ try:
 except ImportError:
     from urllib import HTTPError
 
-import gettext
-
 # pylint: disable=import-error
 from calibre.ebooks.metadata.sources.base import Source
 from calibre.utils.localization import _
@@ -64,11 +62,12 @@ class WolneLekturySource(Source):
     has_html_comments = True
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
-    cached_cover_url_is_reliable = True
+    # ToDo: to be repaired 
+    cached_cover_url_is_reliable = False
     config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
         _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
         _('Please report bugs through the') + \
-        ' <a href="https://www.mobileread.com/">MobileRead</a>' + _(' forum or ')+\
+        ' <a href="https://www.mobileread.com/forums/forumdisplay.php?f=237">MobileRead</a>' + _(' forum or ')+\
         '<a href="https://github.com/CossackLucas/wolnelektury_source">GitHub</a>'+_('.') + '<br>' \
         + _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
     can_get_multiple_covers = True
@@ -294,7 +293,8 @@ class WolneLekturySource(Source):
         multiple covers, it should only get the "best" one.
         '''
         log.info('Downloading cover')
-        if get_best_cover and (cover_url := self.get_cached_cover_url(identifiers)):
+        # ToDo: doing caching properly and bringing it back
+        if False and get_best_cover and (cover_url := self.get_cached_cover_url(identifiers)):
             result_queue.put((self, cover_url))
             log.info('Downloaded best cover')
             return None
