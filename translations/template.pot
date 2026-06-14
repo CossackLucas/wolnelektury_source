@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 15:51+0200\n"
+"POT-Creation-Date: 2026-06-14 15:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,58 +17,64 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: config.py:28
+#: config.py:30
 msgid "HTML in comments"
 msgstr ""
 
-#: config.py:29
+#: config.py:31
 msgid "Choose if comments' formating should be downloaded as well"
 msgstr ""
 
-#: config.py:31
+#: config.py:33
 msgid "Prefered cover type"
 msgstr ""
 
-#: config.py:31
+#: config.py:33
 msgid "Choose which cover type you prefere"
 msgstr ""
 
-#: config.py:32
+#: config.py:34
 msgid "Regular cover"
 msgstr ""
 
-#: config.py:32
+#: config.py:34
 msgid "Simplified cover"
 msgstr ""
 
-#: config.py:34
+#: config.py:36
 msgid "Maximal number of covers to download"
 msgstr ""
 
-#: config.py:35
+#: config.py:37
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr ""
 
 #: __init__.py:48
-msgid "Downloading metadata and covers from site wolnelektury.pl"
+msgid "Download metadata and covers from site wolnelektury.pl"
 msgstr ""
 
-#: __init__.py:69
+#: __init__.py:68
 msgid "Calibre"
 msgstr ""
 
-#: __init__.py:70
+#: __init__.py:69
 msgid "Plugin version"
 msgstr ""
 
+#: __init__.py:70
+msgid "Please report bugs through the"
+msgstr ""
+
+#: __init__.py:71
+msgid " forum or "
+msgstr ""
+
 #: __init__.py:72
+msgid "."
+msgstr ""
+
+#: __init__.py:73
 msgid ""
 "<b>Warning</b>: ISBN could be pointing to different file format edition of "
 "the book"
-msgstr ""
-
-#: __init__.py:70
-msgid ""
-"Please report bugs through the <a href=\"https://www.mobileread.com/"
-"\">MobileRead</a> forum.<br>"
 msgstr ""

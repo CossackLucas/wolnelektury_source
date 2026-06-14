@@ -5,7 +5,7 @@ Custom functions used by plugin
 import json
 import re
 
-from typing import Optional
+from typing import Optional, Callable
 from contextlib import contextmanager
 from collections import namedtuple
 from datetime import datetime
@@ -34,7 +34,7 @@ from calibre_plugins.wolnelektury_source.config import config
 MAX_RESULTS = 3
 
 @contextmanager
-def access_data(thing, log=None):
+def access_data(thing: Callable, log=None):
     '''
     context manager trying to service all possible issues when getting data via Internet
     '''
@@ -67,7 +67,7 @@ def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata
     gets metadata from wolnelektury for given book by it's id
     '''
     abort, log, plugin, _, _, _, timeout = base_args
-    browser = plugin.browser 
+    browser = plugin.browser
 
     if abort.is_set():
         return None
@@ -101,7 +101,6 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
     prefered_cover = config.get_pref('prefered_cover')
 
     user_cover_names = [ prefered_cover ]
-    # ToDo: is there less hacky way to do it?
     user_cover_names.extend(set(COVER_NAMES) - set(user_cover_names))
     log.info(f'Cover types order is: {user_cover_names}')
 

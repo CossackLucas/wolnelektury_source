@@ -45,7 +45,7 @@ class WolneLekturySource(Source):
     '''
     name = PLUGIN_NAME
     author = 'Łukasz Kozak'
-    description = _('Downloading metadata and covers from site wolnelektury.pl')
+    description = _('Download metadata and covers from site wolnelektury.pl')
     version = PLUGIN_VERSION
     # 0.3.0 checked with 6.12
     minimum_calibre_version = (6, 12, 0)
@@ -64,14 +64,14 @@ class WolneLekturySource(Source):
     has_html_comments = True
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
-    cached_cover_url_is_reliable = True # ToDo: confirm
-    # ToDo: probably should mention github 
-    config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • \
-        '+_('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • '+_('Please ' \
-        'report bugs through the <a href="https://www.mobileread.com/">MobileRead</a> forum.<br>') \
+    cached_cover_url_is_reliable = True
+    config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
+        _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
+        _('Please report bugs through the') + \
+        ' <a href="https://www.mobileread.com/">MobileRead</a>' + _(' forum or ')+\
+        '<a href="https://github.com/CossackLucas/wolnelektury_source">GitHub</a>'+_('.') + '<br>' \
         + _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
     can_get_multiple_covers = True
-    auto_trim_covers = False # ToDo: confirm
     prefer_results_with_isbn = False
     options = config.get_options()
     prefs = config.get_prefs()
@@ -344,7 +344,6 @@ class WolneLekturySource(Source):
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
 if __name__ == "__main__":
-    # ToDo: redirect standard out for the duration of tests?
     # To run these test use:
     # calibre-debug -e __init__.py
     from io import StringIO
