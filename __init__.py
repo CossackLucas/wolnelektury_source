@@ -347,9 +347,14 @@ if __name__ == "__main__":
     # ToDo: redirect standard out for the duration of tests?
     # To run these test use:
     # calibre-debug -e __init__.py
+    from io import StringIO
+    import sys
+    import contextlib
     # pylint: disable=import-error,ungrouped-imports
     from calibre.ebooks.metadata.sources.test import authors_test, comments_test,\
         pubdate_test, test_identify_plugin, title_test, isbn_test
+    from calibre import prints
+
     tests = [
         (  # (0) A title, author search and pub date
          {'title': 'Lalka', 'authors':['Bolesław Prus']},
@@ -381,15 +386,40 @@ if __name__ == "__main__":
          {'identifiers':{WOLNELEKTURY_ID: 'napoj-cienisty-lalka'}, },
          [title_test('Lalka', exact=True),
          authors_test(['Bolesław Leśmian']),
-         lambda me: bool(me.comments is None and me.isbn is None)
     ])]
     tests = tests[:]
-    test_identify_plugin(WolneLekturySource.name, tests)
+
+    out = StringIO()
     try:
-        test_identify_plugin(WolneLekturySource.name, tests_to_fail)
+        with contextlib.redirect_stderr(out):
+            with contextlib.redirect_stdout(out):
+                test_identify_plugin(WolneLekturySource.name, tests)
     except SystemExit as e:
-        # ToDo: not exact, should be modified or removed!
-        if e.args[0] != 1:
+        prints(out.getvalue())
+        prints('Basic tests failed')
+        raise SystemExit from e
+    prints('Basic tests passed')
+
+    out = StringIO()
+    def check_test(stream: StringIO) -> bool:
+        '''
+        Checks if test failed 'correctly'
+        '''
+        test_line = stream.getvalue().splitlines()[-1]
+        if test_line in set(['Failed to find identifier: isbn2', 'Failed to find comments2']):
+            return True
+        return False
+    try:
+        with contextlib.redirect_stderr(out):
+            with contextlib.redirect_stdout(out):
+                test_identify_plugin(WolneLekturySource.name, tests_to_fail)
+    except SystemExit as e:
+        if e.args[0] != 1 or check_test(out):
+            prints(out.getvalue())
+            prints('Complex tests failed')
             raise SystemExit(1) from e
     else:
+        prints(out.getvalue())
+        prints('Complex tests failed')
         raise SystemExit(1)
+    prints('Complex tests passed')
