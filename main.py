@@ -70,13 +70,16 @@ def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata
             return None
         log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
         read_data = page.read().decode(encoding='utf-8')
-        me = __extract_metadata_xml(etree.fromstring(read_data))
+        parsed_data = etree.fromstring(read_data)
+        me = __extract_metadata_xml(parsed_data)
         # ToDo: should use prefered_cover
-        plugin.cache_identifier_to_cover_url(wolnelektury_id, f'https://wolnelektury.pl/media/book/cover/{wolnelektury_id}.jpg')
+        cover_urls = __get_cover_urls(base_args, wolnelektury_id)
+        if len(cover_urls) != 0:
+            plugin.cache_identifier_to_cover_url(wolnelektury_id, cover_urls)
 
     return me
 
-def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=False) -> list[str]:
+def __get_cover_urls(base_args: BaseArgs, wolnelektury_id: str) -> list[str]:
     '''
     get cover's urls from wolnelektury.pl. If none are found, result is empty
     '''
@@ -112,9 +115,6 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
             url = parsed_data.get(name)
             if url is not None:
                 result.append(url)
-            if get_best_cover:
-                log.info('Stopping search for covers early, as best cover was found')
-                break
 
     log.info(f'Search finished with {len(result)} urls found')
 

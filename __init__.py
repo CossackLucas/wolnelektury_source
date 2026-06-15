@@ -21,8 +21,8 @@ from calibre.constants import numeric_version
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
-from calibre_plugins.wolnelektury_source.main import get_metadata, get_cover_urls, \
-    BaseArgs, access_data, check_site_for_books
+from calibre_plugins.wolnelektury_source.main import get_metadata, BaseArgs, \
+    access_data, check_site_for_books
 from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, WOLNELEKTURY_ID
 # pylint: enable=import-error
@@ -63,7 +63,7 @@ class WolneLekturySource(Source):
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
     # ToDo: to be repaired 
-    cached_cover_url_is_reliable = False
+    cached_cover_url_is_reliable = True
     config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
         _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
         _('Please report bugs through the') + \
@@ -152,18 +152,11 @@ class WolneLekturySource(Source):
         Note that this method must only return validated URLs, i.e. not URLS
         that could result in a generic cover image or a not found error.
         '''
-        # ToDo: should validate the adresses
-        cover_url = None
-        if wolnelektury_id := identifiers.get(WOLNELEKTURY_ID):
-            cover_url = f'https://wolnelektury.pl/media/book/cover/{wolnelektury_id}.jpg'
-        elif result := self.get_book_url(identifiers):
-            cover_url = f'https://wolnelektury.pl/media/book/cover/{result[1]}.jpg'
-        if cover_url:
-            # ToDo: make sure it makes sense
-            with access_data(self.browser.open_novisit(cover_url, timeout=10), None) as page:
-                if page.getcode() != 200:
-                    cover_url = None
-        return cover_url
+        book_id = identifiers.get(WOLNELEKTURY_ID)
+        if book_id is None:
+            if (url := self.get_book_url(identifiers)) is not None:
+                book_id = self.id_from_url(url)
+        return self.cached_identifier_to_cover_url(book_id) if book_id is not None else None
 
     __WOLNELEKTURY_ID_REGEX = (
         re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/katalog\/lektura\/([a-z\-]+)\/?'),
@@ -308,26 +301,14 @@ class WolneLekturySource(Source):
         '''
         log.info('Downloading cover')
         # ToDo: doing caching properly and bringing it back
-        urls: list[str] = []
-        if (cover_url := self.get_cached_cover_url(identifiers)) is None:
+        urls = self.get_cached_cover_url(identifiers)
+        if urls is None:
             log.info('No cached cover found, running identify')
-            # ToDo: identification here
+            rq = Queue()
+            self.identify(log, rq, abort, title, authors, identifiers, timeout)
+            # ToDo: get ids
         else:
-            log.info('Cached cover found.')
-            if get_best_cover or self.prefs['max_covers'] == 1:
-                urls = [cover_url]
-                log.info('Shortcutting search')
-            else:
-                book_id = self.id_from_url(cover_url)
-                log.info(f'Search for cover for {book_id}')
-
-        if abort.is_set():
-            return
-
-        base_args = BaseArgs(abort, log, self, title, authors, identifiers, timeout)
-        if len(urls) == 0 and book_id is not None:
-            log.info(f'Looking for cover urls for id {book_id}')
-            urls = get_cover_urls(base_args, book_id)
+            log.info('Cached covers found.')
 
         if abort.is_set():
             return
@@ -337,8 +318,6 @@ class WolneLekturySource(Source):
             return None
 
         log.info(f'Urls found {urls}')
-
-        #urls.extend(get_cover_urls(base_args, wolnelektury_id, get_best_cover))
 
         if abort.is_set():
             return None
