@@ -300,18 +300,29 @@ class WolneLekturySource(Source):
         multiple covers, it should only get the "best" one.
         '''
         log.info('Downloading cover')
-        # ToDo: doing caching properly and bringing it back
         urls = self.get_cached_cover_url(identifiers)
         if urls is None:
             log.info('No cached cover found, running identify')
             rq = Queue()
-            self.identify(log, rq, abort, title, authors, identifiers, timeout)
-            # ToDo: get ids
+            result = self.identify(log, rq, abort, title, authors, identifiers, timeout)
+
+            if abort.is_set():
+                return None
+
+            if rq.empty():
+                return result
+            book = rq.get()
+            # ToDo: is it right?
+            if book.source_relevance == 1:
+                urls = self.get_cached_cover_url(book.get_identifiers())
+            else:
+                # ToDo: should be changed to never?
+                raise RuntimeError('Should not be accesible!')
         else:
             log.info('Cached covers found.')
 
         if abort.is_set():
-            return
+            return None
 
         if len(urls) == 0:
             log.error('No book cover found')
