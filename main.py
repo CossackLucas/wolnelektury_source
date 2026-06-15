@@ -9,6 +9,7 @@ from typing import Optional, Callable
 from contextlib import contextmanager
 from collections import namedtuple
 from datetime import datetime
+from enum import StrEnum
 
 try:
     from urllib.parse import quote_plus
@@ -52,6 +53,13 @@ def access_data(thing: Callable, log=None):
 
 BaseArgs = namedtuple('BaseArgs', ['abort', 'log', 'plugin', 'title', 'authors',\
    'identifiers', 'timeout'])
+
+class SearchCategory(StrEnum):
+    '''
+    Enum describing search category for WolneLektury.pl queries
+    '''
+    BOOK = 'book'
+    AUTHOR = 'author'
 
 def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata]:
     '''
@@ -118,11 +126,9 @@ def __get_cover_urls(base_args: BaseArgs, wolnelektury_id: str) -> list[str]:
 
     return result
 
-def __build_search_query(query_tokens: list[str], category: str) -> str:
-    if category not in set(('book', 'author')):
-        raise ValueError(f'Wrong category {category}')
+def __build_search_query(query_tokens: list[str], category: SearchCategory) -> str:
     return 'https://wolnelektury.pl/szukaj/?q=' + quote_plus(' '.join(query_tokens)) \
-        + '=&category=' + category
+        + '=&category=' + category.value
 
 def check_site_for_books(
     base_args: BaseArgs
@@ -140,7 +146,7 @@ def check_site_for_books(
         return []
 
     title_tokens: list[str] = list(plugin.get_title_tokens(title))
-    title_query: str = __build_search_query(title_tokens, 'book')
+    title_query: str = __build_search_query(title_tokens, SearchCategory.BOOK)
     log.info(f'Checking query: {title_query}')
 
     found_books: list[str] = []
@@ -158,7 +164,7 @@ def check_site_for_books(
     if len(found_books) != 0:
         return found_books
 
-    author_query: str = __build_search_query(plugin.get_author_tokens(authors), 'author')
+    author_query: str = __build_search_query(plugin.get_author_tokens(authors), SearchCategory.AUTHOR)
     found_authors = []
     with access_data(browser.open(author_query, timeout=timeout), log) as page:
         found_authors = __extract_authors(page)
