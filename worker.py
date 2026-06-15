@@ -2,6 +2,7 @@
 Modul aggregating workers code
 '''
 import json
+import time
 
 from threading import Thread
 from typing import Optional
@@ -15,16 +16,13 @@ from lxml import etree
 # pylint: disable=import-error
 from calibre.ebooks.metadata.book.base import Metadata
 
-from calibre_plugins.wolnelektury_source.main import extract_metadata_xml
+from calibre_plugins.wolnelektury_source.main import extract_metadata_xml, get_api_url, get_xml_url
 from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import COVER_NAMES, WOLNELEKTURY_ID
 # pylint: enable=import-error
 
-def run_workers():
-    pass
-
 WorkerInput = namedtuple('WorkerInput',
-    ['data', 'log', 'timeout', 'browser', 'plugin', 'result_queue']
+    ['data', 'log', 'timeout', 'plugin', 'result_queue']
     )
 
 class BaseWorker(Thread):
@@ -35,7 +33,7 @@ class BaseWorker(Thread):
         super().__init__()
         self.daemon = True
         self.basic_data: dict = worker_input.data
-        self.browser = worker_input.browser
+        self.browser = worker_input.plugin.browser.clone_browser()
         self.log = worker_input.log
         self.timeout = worker_input.timeout
         self.result_queue = worker_input.result_queue
@@ -45,6 +43,7 @@ class BaseWorker(Thread):
         try:
             if (result := self._get_data()):
                 self.result_queue.put(result)
+        # ToDo: probably should be more preceise
         except Exception as e:
             self.log.exception('Worker could not finish. Exception:')
             self.log.exception(e)
@@ -54,6 +53,34 @@ class BaseWorker(Thread):
         should return Optional[result_type]
         '''
         raise NotImplementedError('Redefine __get_data() method in child class')
+
+    @classmethod
+    def run_workers(cls, workers_input: list[WorkerInput], abort):
+        '''
+        allows running workers with given input
+        '''
+        workers = []
+        for worker_input in workers_input:
+            w = cls(worker_input)
+            workers.append(w)
+
+        if abort.is_set():
+            return
+
+        for w in workers:
+            w.start()
+            time.sleep(0.1)
+
+        while not abort.is_set():
+            is_alive = False
+            for w in workers:
+                w.join(0.2)
+                if abort.is_set():
+                    break
+                if w.is_alive():
+                    is_alive = True
+            if not is_alive:
+                break
 
 class MetadataWorker(BaseWorker):
     '''
@@ -67,7 +94,7 @@ class MetadataWorker(BaseWorker):
         gets metadata from wolnelektury for given book by it's id
         '''
         wolnelektury_id = self.basic_data[WOLNELEKTURY_ID]
-        wolnelektury_url: str = _get_xml_url(wolnelektury_id)
+        wolnelektury_url: str = get_xml_url(wolnelektury_id)
         me = None
         with closing(self.browser.open(wolnelektury_url, timeout=self.timeout)) as page:
             self.log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
@@ -80,7 +107,7 @@ class MetadataWorker(BaseWorker):
             if len(cover_urls) != 0:
                 me.has_cover = True
                 self.plugin.cache_identifier_to_cover_url(wolnelektury_id, cover_urls)
-                self.log.info(f'Cover urls {cover_urls} added to cache under {wolnelektury_id}')
+        self.plugin.clean_downloaded_metadata(me)
 
         return me
 
@@ -99,7 +126,7 @@ class MetadataWorker(BaseWorker):
         max_covers = config.get_pref('max_covers')
         self.log.info(f'max_covers preference is {max_covers}')
 
-        with closing(self.browser.open(_get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
+        with closing(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
             self.log.info("Parsing data for covers")
             parsed_data = json.load(page)
             for i, cover_name in enumerate(user_cover_names):
@@ -116,20 +143,6 @@ class MetadataWorker(BaseWorker):
 
         return result
 
-def _get_api_url(wolnelektury_id: str) -> str:
-    ''' 
-    Generate api url from wolnelektury id (nothing is checked)
-    '''
-    return f'https://wolnelektury.pl/api/books/{wolnelektury_id}/?format=json'
-
-def _get_xml_url(wolnelektury_id: str) -> str:
-    ''' 
-    Generate url for data xml file from wolnelektury id (nothing is checked)
-    '''
-    return f'https://wolnelektury.pl/media/book/xml/{wolnelektury_id}.xml'
-
 class AuthorWorker(BaseWorker):
-    # pylint: disable=unused-private-member
-    def __get_data(self):
+    def _get_data(self):
         pass
-    # pylint: enable=unused-private-member

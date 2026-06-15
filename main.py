@@ -180,13 +180,13 @@ def __extract_authors_books(page, title_tokens: list[str]) -> list[str]:
 
     return result
 
-def __get_api_url(wolnelektury_id: str) -> str:
+def get_api_url(wolnelektury_id: str) -> str:
     ''' 
     Generate api url from wolnelektury id (nothing is checked)
     '''
     return f'https://wolnelektury.pl/api/books/{wolnelektury_id}/?format=json'
 
-def __get_xml_url(wolnelektury_id: str) -> str:
+def get_xml_url(wolnelektury_id: str) -> str:
     ''' 
     Generate url for data xml file from wolnelektury id (nothing is checked)
     '''

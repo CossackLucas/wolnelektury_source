@@ -3,7 +3,6 @@ Metadata source plugin using wolnelektury.pl page as source
 Main definition file
 '''
 import re
-import time
 
 try:
     from queue import Queue
@@ -22,7 +21,7 @@ from calibre.constants import numeric_version
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
-from calibre_plugins.wolnelektury_source.main import BaseArgs, access_data, check_site_for_books
+from calibre_plugins.wolnelektury_source.main import BaseArgs, check_site_for_books
 from calibre_plugins.wolnelektury_source.worker import MetadataWorker, WorkerInput
 from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, WOLNELEKTURY_ID
@@ -265,41 +264,25 @@ class WolneLekturySource(Source):
         if len(found_books) == 0:
             return 'The book could not be identified on wolnelektury.pl'
 
-        workers = []
+        workers_input = []
         for i, book_id in enumerate(found_books, 1):
             basic_data = { WOLNELEKTURY_ID: book_id, 'relevance': i }
-            w = MetadataWorker(WorkerInput(
+            w = WorkerInput(
                 basic_data,
                 log,
                 timeout,
-                self.browser.clone_browser(),
                 self,
                 result_queue
-            ))
-            workers.append(w)
+            )
+            workers_input.append(w)
 
         if abort.is_set():
             return None
 
-        log.info('Workers created, starting metadata download')
-
-        for w in workers:
-            w.start()
-            time.sleep(0.1)
-
-        while not abort.is_set():
-            is_alive = False
-            for w in workers:
-                w.join(0.2)
-                if abort.is_set():
-                    break
-                if w.is_alive():
-                    is_alive = True
-            if not is_alive:
-                break
+        log.info('Starting metadata download')
+        MetadataWorker.run_workers(workers_input, abort)
 
         return None
-
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
     # pylint: disable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
@@ -342,12 +325,9 @@ class WolneLekturySource(Source):
         if abort.is_set():
             return None
 
-        log.info(f'urls are: {urls}')
         if len(urls) == 0:
             log.error('No book cover found')
             return None
-
-        log.info(f'Urls found {urls}')
 
         if abort.is_set():
             return None
@@ -363,7 +343,6 @@ class WolneLekturySource(Source):
         )
 
         return None
-
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
 if __name__ == "__main__":
