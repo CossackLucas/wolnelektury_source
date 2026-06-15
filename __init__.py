@@ -67,13 +67,24 @@ class WolneLekturySource(Source):
     config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
         _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
         _('Please report bugs through the') + \
-        ' <a href="https://www.mobileread.com/forums/forumdisplay.php?f=237">MobileRead</a>' + _(' forum or ')+\
+        ' <a href="https://www.mobileread.com/forums/showthread.php?t=373972">MobileRead</a>' + _(' forum or ')+\
         '<a href="https://github.com/CossackLucas/wolnelektury_source">GitHub</a>'+_('.') + '<br>' \
         + _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
     can_get_multiple_covers = True
     prefer_results_with_isbn = False
     options = config.get_options()
-    prefs = config.get_prefs()
+
+    @property
+    def prefs(self):
+        '''
+        redifined dictionary of preferences
+        '''
+        # self._config_obj exists in Source class definition
+        # pylint: disable=access-member-before-definition,attribute-defined-outside-init
+        if self._config_obj is None:
+            self._config_obj = config.get_prefs()
+        return self._config_obj
+        # pylint: enable=access-member-before-definition,attribute-defined-outside-init
 
     def is_configured(self):
         '''
@@ -93,7 +104,7 @@ class WolneLekturySource(Source):
 
     def save_settings(self, config_widget):
         '''
-        needed as 'max_covers' already used and if left as 0, calibre remembers it and shows no covers
+        needed as 'max_covers' already used and if set to 0, calibre uses it and shows no covers
         '''
         def clear_max_covers(value: int) -> int:
             value = max(value, 1)
