@@ -14,7 +14,7 @@ except NameError:
     pass
 # pylint: enable=undefined-variable
 
-PLUGIN_VERSION = (0, 4, 1)
+PLUGIN_VERSION = (0, 5, 0)
 PLUGIN_NAME = 'WolneLektury'
 WOLNELEKTURY_ID = 'wolnelektury'
 

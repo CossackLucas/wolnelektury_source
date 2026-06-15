@@ -72,13 +72,14 @@ def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata
         read_data = page.read().decode(encoding='utf-8')
         parsed_data = etree.fromstring(read_data)
         me = __extract_metadata_xml(parsed_data)
-        # ToDo: should use prefered_cover
         cover_urls = __get_cover_urls(base_args, wolnelektury_id)
         if len(cover_urls) != 0:
+            me.has_cover = True
             plugin.cache_identifier_to_cover_url(wolnelektury_id, cover_urls)
 
     return me
 
+# ToDo: should get_best_cover come back?
 def __get_cover_urls(base_args: BaseArgs, wolnelektury_id: str) -> list[str]:
     '''
     get cover's urls from wolnelektury.pl. If none are found, result is empty
@@ -91,20 +92,17 @@ def __get_cover_urls(base_args: BaseArgs, wolnelektury_id: str) -> list[str]:
         return ()
     result: list[str] = []
 
-    source_url: str = __get_api_url(wolnelektury_id)
-    prefered_cover = config.get_pref('prefered_cover')
-
-    user_cover_names = [ prefered_cover ]
+    user_cover_names = [ config.get_pref('prefered_cover') ]
     user_cover_names.extend(set(COVER_NAMES.keys()) - set(user_cover_names))
     log.info(f'Cover types order is: {user_cover_names}')
 
     max_covers = config.get_pref('max_covers')
     log.info(f'max_covers preference is {max_covers}')
 
-    with access_data(browser.open(source_url, timeout=timeout), log) as page:
+    with access_data(browser.open(__get_api_url(wolnelektury_id), timeout=timeout), log) as page:
         log.info("Parsing data for covers")
         parsed_data = json.load(page)
-        for i, name in enumerate(user_cover_names):
+        for i, cover_name in enumerate(user_cover_names):
             if max_covers == i:
                 log.info(
                     f'Stopping search for covers early at {i}th search, found {len(result)} url(s)'
@@ -112,7 +110,7 @@ def __get_cover_urls(base_args: BaseArgs, wolnelektury_id: str) -> list[str]:
                 break
             if abort.is_set():
                 break
-            url = parsed_data.get(name)
+            url = parsed_data.get(cover_name)
             if url is not None:
                 result.append(url)
 
@@ -283,9 +281,6 @@ def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if config.get_pref('publisher'):
         me.publisher = 'Fundacja Nowoczesna Polska'
 
-    # ToDo: should be checked?
-    me.has_cover = True
-
     return me
 
 def __get_data_from_xml(parsed_data: etree.Element, element: str) -> Optional[str]:
@@ -346,6 +341,6 @@ def __get_html_formatting(data: str) -> str:
 
     tmp_str = replace_element(data, 'akap', 'p')
 
-    tmp_str = replace_element(tmp_str, 'tytul_dziela', 'i')
+    tmp_str = replace_element(tmp_str, 'tytul_dziela', 'em')
 
     return tmp_str
