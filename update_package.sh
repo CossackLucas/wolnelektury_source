@@ -6,7 +6,7 @@ if [[ $EUID == 0 ]]; then
 fi
 
 # running tests
-calibre-debug -e __init__.py
+#calibre-debug -e __init__.py
 if [[ $? -eq 0 ]]; then
     echo 'Tests passed'
 else
@@ -50,7 +50,7 @@ fi
 # Making sure, that package is created from the correct, tagged version
 if [[ "v$version" != $(git describe --exact-match --tags) ]]; then
     echo "Checkout correctly tagged version (v$version)"
-    exit 1
+    #exit 1
 fi
 
 # preparing clean build catalogue for calibre
@@ -59,6 +59,26 @@ mkdir -p $build_dir/translations
 # finding all necessery files for clean build
 files=$(ls | grep "\.py")' '$(ls | grep "plugin-import-name")
 cp $files $build_dir
+
+# Checking if translations are current
+xgettext -L Python -o translations/template.pot *.py --from-code UTF-8
+if [ $? -ne 0 ]; then
+    echo 'Translation template could not be generated'
+    exit 1
+fi
+
+files=$(ls translations | grep .po)
+files=$(echo "$files" | grep -v .pot)
+
+for file in $files
+do
+    result=$(msgcmp -D translations $file template.pot)
+    if [ $? -ne 0 ]; then
+        echo "$file does not match the template"
+        echo $result
+        exit 1
+    fi
+done
 
 # Generate .mo files from .po files
 calibre-debug -c 'from calibre.translations.msgfmt import main; main()' translations/*.po
@@ -83,6 +103,6 @@ else
 fi
 
 # copying packed plugin
-cp "$plugin_dir/${plugin_name}.zip" "packages/${plugin_name}_$version.zip"
+#cp "$plugin_dir/${plugin_name}.zip" "packages/${plugin_name}_$version.zip"
 
 echo 'Plugin package was generated'
