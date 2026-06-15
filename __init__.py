@@ -305,37 +305,20 @@ class WolneLekturySource(Source):
         '''
         log.info('Downloading cover')
         # ToDo: doing caching properly and bringing it back
-        if False and get_best_cover and (cover_url := self.get_cached_cover_url(identifiers)):
-            result_queue.put((self, cover_url))
-            log.info('Downloaded best cover')
+        urls: list[str] = []
+        if (cover_url := self.get_cached_cover_url(identifiers)) is None:
+            log.info('No cached cover found, running identify')
+            # ToDo: identification here
+        else:
+            urls = [cover_url]
+
+        if len(urls) == 0:
+            log.error('No book cover found')
             return None
 
-        wolnelektury_id = identifiers.get(WOLNELEKTURY_ID)
-        identify_queue = Queue()
-        found_books: list[str] = []
+        log.info(f'Urls found {urls}')
 
-        if wolnelektury_id is None:
-            result = self.identify(log, identify_queue, abort, title, authors, identifiers, timeout)
-            if abort.is_set():
-                return None
-
-            if result is not None:
-                return result
-            if not identify_queue.empty:
-                found_books = [book_id for me in iter(identify_queue.get_nowait, None) \
-                    if (book_id := me.get_identifiers().get(WOLNELEKTURY_ID))]
-        else:
-            found_books = [wolnelektury_id]
-
-        if len(found_books) == 0:
-            return 'No books were identified to find covers'
-
-        urls: list[str] = []
-        base_args = BaseArgs(abort, log, self, title, authors, identifiers, timeout)
-        for book_id in found_books:
-            urls.extend(get_cover_urls(base_args, wolnelektury_id, get_best_cover))
-
-        log.info(f'Found cover urls: {urls}')
+        #urls.extend(get_cover_urls(base_args, wolnelektury_id, get_best_cover))
 
         if abort.is_set():
             return None

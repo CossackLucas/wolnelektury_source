@@ -71,6 +71,8 @@ def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata
         log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
         read_data = page.read().decode(encoding='utf-8')
         me = __extract_metadata_xml(etree.fromstring(read_data))
+        # ToDo: should use prefered_cover
+        plugin.cache_identifier_to_cover_url(wolnelektury_id, f'https://wolnelektury.pl/media/book/cover/{wolnelektury_id}.jpg')
 
     return me
 
