@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-15 12:25+0200\n"
-"PO-Revision-Date: 2026-06-15 12:31+0200\n"
+"POT-Creation-Date: 2026-06-15 17:06+0200\n"
+"PO-Revision-Date: 2026-06-15 17:07+0200\n"
 "Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
 "Language-Team: \n"
 "Language: pl\n"
@@ -37,14 +37,6 @@ msgstr "Preferowany rodzaj okładki"
 msgid "Choose which cover type you prefere"
 msgstr "Wybierz preferowany rodzaj okładki"
 
-#: config.py:34
-msgid "Regular cover"
-msgstr "Zwykła okładka"
-
-#: config.py:34
-msgid "Simplified cover"
-msgstr "Uproszczona okładka"
-
 #: config.py:36
 msgid "Maximal number of covers to download"
 msgstr "Maksymalna liczba okładek do pobrania"
@@ -52,6 +44,14 @@ msgstr "Maksymalna liczba okładek do pobrania"
 #: config.py:37
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr "Maksymalna liczba okładek do pobrania z portalu (do 2)"
+
+#: consts.py:13
+msgid "Regular cover"
+msgstr "Zwykła okładka"
+
+#: consts.py:13
+msgid "Simplified cover"
+msgstr "Uproszczona okładka"
 
 #: __init__.py:46
 msgid "Download metadata and covers from site wolnelektury.pl"

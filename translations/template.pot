@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-15 12:25+0200\n"
+"POT-Creation-Date: 2026-06-15 17:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,20 +33,20 @@ msgstr ""
 msgid "Choose which cover type you prefere"
 msgstr ""
 
-#: config.py:34
-msgid "Regular cover"
-msgstr ""
-
-#: config.py:34
-msgid "Simplified cover"
-msgstr ""
-
 #: config.py:36
 msgid "Maximal number of covers to download"
 msgstr ""
 
 #: config.py:37
 msgid "Maximal number of covers to download from the site (up to 2)"
+msgstr ""
+
+#: consts.py:13
+msgid "Regular cover"
+msgstr ""
+
+#: consts.py:13
+msgid "Simplified cover"
 msgstr ""
 
 #: __init__.py:46

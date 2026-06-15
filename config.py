@@ -9,7 +9,7 @@ from calibre.utils.config import JSONConfig
 from calibre.ebooks.metadata.sources.base import Option
 from calibre.utils.localization import _
 
-from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -31,7 +31,7 @@ class PluginConfig:
             _('Choose if comments\' formating should be downloaded as well')),
         Option('prefered_cover', 'choices', 'cover',
            _('Prefered cover type'), _('Choose which cover type you prefere'),
-            {'cover': _('Regular cover'), 'simple_cover': _('Simplified cover')}),
+           COVER_NAMES),
         # ToDo: can it be limited to max number?
         Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                       _('Maximal number of covers to download from the site (up to 2)')),

@@ -23,6 +23,7 @@ from lxml.html import fromstring, tostring, Element
 from calibre.ebooks.metadata.book.base import Metadata
 
 from calibre_plugins.wolnelektury_source.config import config
+from calibre_plugins.wolnelektury_source.consts import COVER_NAMES
 # pylint: enable=import-error
 
 MAX_RESULTS = 3
@@ -73,8 +74,6 @@ def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata
 
     return me
 
-# 'cover' has to stay first to break for best cover to work properly
-COVER_NAMES = ('cover', 'simple_cover')
 def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=False) -> list[str]:
     '''
     get cover's urls from wolnelektury.pl. If none are found, result is empty
@@ -91,7 +90,7 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
     prefered_cover = config.get_pref('prefered_cover')
 
     user_cover_names = [ prefered_cover ]
-    user_cover_names.extend(set(COVER_NAMES) - set(user_cover_names))
+    user_cover_names.extend(set(COVER_NAMES.keys()) - set(user_cover_names))
     log.info(f'Cover types order is: {user_cover_names}')
 
     max_covers = config.get_pref('max_covers')
