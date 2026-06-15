@@ -165,8 +165,10 @@ class WolneLekturySource(Source):
                     cover_url = None
         return cover_url
 
-    WOLNELEKTURY_ID_REGEX = re.compile(
-        r'(https?:\/\/)(www.)?wolnelektury.pl\/katalog\/lektura\/([a-z\-]+)\/?'
+    __WOLNELEKTURY_ID_REGEX = (
+        re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/katalog\/lektura\/([a-z\-]+)\/?'),
+        re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/media\/book\/cover\/([a-z\-]+).jpg\/?'),
+        re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/media\/book\/cover_simple\/([a-z\-]+)_[a-zA-Z0-9]+.jpg\/?')
     )
 
     def id_from_url(self, url):
@@ -176,9 +178,10 @@ class WolneLekturySource(Source):
         If the URL does not match the pattern for the metadata source,
         return None.
         '''
-        search_result = self.WOLNELEKTURY_ID_REGEX.search(url)
-        if search_result is not None:
-            return search_result.group(3)
+        for regex in self.__WOLNELEKTURY_ID_REGEX:
+            search_result = regex.search(url)
+            if search_result is not None:
+                return search_result.group(3)
 
         return None
 
@@ -310,7 +313,24 @@ class WolneLekturySource(Source):
             log.info('No cached cover found, running identify')
             # ToDo: identification here
         else:
-            urls = [cover_url]
+            log.info('Cached cover found.')
+            if get_best_cover or self.prefs['max_covers'] == 1:
+                urls = [cover_url]
+                log.info('Shortcutting search')
+            else:
+                book_id = self.id_from_url(cover_url)
+                log.info(f'Search for cover for {book_id}')
+
+        if abort.is_set():
+            return
+
+        base_args = BaseArgs(abort, log, self, title, authors, identifiers, timeout)
+        if len(urls) == 0 and book_id is not None:
+            log.info(f'Looking for cover urls for id {book_id}')
+            urls = get_cover_urls(base_args, book_id)
+
+        if abort.is_set():
+            return
 
         if len(urls) == 0:
             log.error('No book cover found')

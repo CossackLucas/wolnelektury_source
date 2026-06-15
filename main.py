@@ -116,6 +116,8 @@ def get_cover_urls(base_args: BaseArgs, wolnelektury_id: str, get_best_cover=Fal
                 log.info('Stopping search for covers early, as best cover was found')
                 break
 
+    log.info(f'Search finished with {len(result)} urls found')
+
     return result
 
 def __build_search_query(query_tokens: list[str], category: str) -> str:
