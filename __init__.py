@@ -3,6 +3,7 @@ Metadata source plugin using wolnelektury.pl page as source
 Main definition file
 '''
 import re
+import time
 
 try:
     from queue import Queue
@@ -21,8 +22,8 @@ from calibre.constants import numeric_version
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
-from calibre_plugins.wolnelektury_source.main import get_metadata, BaseArgs, \
-    access_data, check_site_for_books
+from calibre_plugins.wolnelektury_source.main import BaseArgs, access_data, check_site_for_books
+from calibre_plugins.wolnelektury_source.worker import MetadataWorker, WorkerInput
 from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, WOLNELEKTURY_ID
 # pylint: enable=import-error
@@ -264,21 +265,38 @@ class WolneLekturySource(Source):
         if len(found_books) == 0:
             return 'The book could not be identified on wolnelektury.pl'
 
+        workers = []
         for i, book_id in enumerate(found_books, 1):
-            if me := get_metadata(base_args, book_id):
-                me.set_identifier(WOLNELEKTURY_ID, book_id)
-                me.source_relevance = i
-                self.clean_downloaded_metadata(me)
-                result_queue.put(me)
-                log.info(
-                    f'Metadata for "{book_id}" id found on the site'
-                )
-            else:
-                log.error(
-                    f'Metadata could not be found for "{book_id}" id on the site'
-                )
-            if abort.is_set():
-                return None
+            basic_data = { WOLNELEKTURY_ID: book_id, 'relevance': i }
+            w = MetadataWorker(WorkerInput(
+                basic_data,
+                log,
+                timeout,
+                self.browser.clone_browser(),
+                self,
+                result_queue
+            ))
+            workers.append(w)
+
+        if abort.is_set():
+            return None
+
+        log.info('Workers created, starting metadata download')
+
+        for w in workers:
+            w.start()
+            time.sleep(0.1)
+
+        while not abort.is_set():
+            is_alive = False
+            for w in workers:
+                w.join(0.2)
+                if abort.is_set():
+                    break
+                if w.is_alive():
+                    is_alive = True
+            if not is_alive:
+                break
 
         return None
 
@@ -324,6 +342,7 @@ class WolneLekturySource(Source):
         if abort.is_set():
             return None
 
+        log.info(f'urls are: {urls}')
         if len(urls) == 0:
             log.error('No book cover found')
             return None

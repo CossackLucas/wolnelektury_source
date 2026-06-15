@@ -2,6 +2,8 @@
 Custom functions used by plugin
 '''
 # pylint: disable=c-extension-no-member
+# ToDo: at the moment json is only needed because of access_data
+# try to remove it
 import json
 import re
 
@@ -24,7 +26,6 @@ from lxml.html import fromstring, tostring, Element
 from calibre.ebooks.metadata.book.base import Metadata
 
 from calibre_plugins.wolnelektury_source.config import config
-from calibre_plugins.wolnelektury_source.consts import COVER_NAMES
 # pylint: enable=import-error
 
 MAX_RESULTS = 3
@@ -60,71 +61,6 @@ class SearchCategory(StrEnum):
     '''
     BOOK = 'book'
     AUTHOR = 'author'
-
-def get_metadata(base_args: BaseArgs, wolnelektury_id: str) -> Optional[Metadata]:
-    '''
-    gets metadata from wolnelektury for given book by it's id
-    '''
-    abort, log, plugin, _, _, _, timeout = base_args
-    browser = plugin.browser
-
-    if abort.is_set():
-        return None
-
-    wolnelektury_url: str = __get_xml_url(wolnelektury_id)
-    me = None
-    with access_data(browser.open(wolnelektury_url, timeout=timeout), log) as page:
-        if abort.is_set():
-            return None
-        log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
-        read_data = page.read().decode(encoding='utf-8')
-        parsed_data = etree.fromstring(read_data)
-        me = __extract_metadata_xml(parsed_data)
-        cover_urls = __get_cover_urls(base_args, wolnelektury_id)
-        if len(cover_urls) != 0:
-            me.has_cover = True
-            plugin.cache_identifier_to_cover_url(wolnelektury_id, cover_urls)
-
-    return me
-
-# ToDo: should get_best_cover come back?
-def __get_cover_urls(base_args: BaseArgs, wolnelektury_id: str) -> list[str]:
-    '''
-    get cover's urls from wolnelektury.pl. If none are found, result is empty
-    '''
-    abort, log, plugin, _, _, _, timeout = base_args
-    browser = plugin.browser
-
-    log.info(f"Getting cover urls for {wolnelektury_id}")
-    if abort.is_set():
-        return ()
-    result: list[str] = []
-
-    user_cover_names = [ config.get_pref('prefered_cover') ]
-    user_cover_names.extend(set(COVER_NAMES.keys()) - set(user_cover_names))
-    log.info(f'Cover types order is: {user_cover_names}')
-
-    max_covers = config.get_pref('max_covers')
-    log.info(f'max_covers preference is {max_covers}')
-
-    with access_data(browser.open(__get_api_url(wolnelektury_id), timeout=timeout), log) as page:
-        log.info("Parsing data for covers")
-        parsed_data = json.load(page)
-        for i, cover_name in enumerate(user_cover_names):
-            if max_covers == i:
-                log.info(
-                    f'Stopping search for covers early at {i}th search, found {len(result)} url(s)'
-                    )
-                break
-            if abort.is_set():
-                break
-            url = parsed_data.get(cover_name)
-            if url is not None:
-                result.append(url)
-
-    log.info(f'Search finished with {len(result)} urls found')
-
-    return result
 
 def __build_search_query(query_tokens: list[str], category: SearchCategory) -> str:
     return 'https://wolnelektury.pl/szukaj/?q=' + quote_plus(' '.join(query_tokens)) \
@@ -262,7 +198,11 @@ def __get_authors_url(wolnelektury_id: str) -> str:
     '''
     return f'https://wolnelektury.pl/katalog/autor/{wolnelektury_id}/'
 
-def __extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
+def extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
+    '''
+    Extracts metadata from lxml etree
+    Assumes data is from wolnelektury.pl
+    '''
     me = Metadata('', '')
 
     if (book_title := __get_data_from_xml(parsed_data, 'title')) is not None:
