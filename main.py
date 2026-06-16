@@ -229,10 +229,8 @@ class MetadataWorker(BaseWorker):
 
         user_cover_names = [ config.get_pref('prefered_cover') ]
         user_cover_names.extend(set(COVER_NAMES.keys()) - set(user_cover_names))
-        self.log.info(f'Cover types order is: {user_cover_names}')
 
         max_covers = config.get_pref('max_covers')
-        self.log.info(f'max_covers preference is {max_covers}')
 
         with closing(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
             self.log.info("Parsing data for covers")

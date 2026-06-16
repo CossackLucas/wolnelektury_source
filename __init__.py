@@ -294,6 +294,7 @@ class WolneLekturySource(Source):
             return None
 
         log.info('Starting metadata download')
+        log.info(f'max_covers preference is {self.prefs['max_covers']}')
         MetadataWorker.run_workers(workers_input, abort)
 
         return None
@@ -412,7 +413,7 @@ if __name__ == "__main__":
     except SystemExit as e:
         prints(out.getvalue())
         prints('Basic tests failed')
-        raise SystemExit from e
+        raise SystemExit(1) from e
     prints('Basic tests passed')
 
     out = StringIO()
@@ -420,8 +421,8 @@ if __name__ == "__main__":
         '''
         Checks if test failed 'correctly'
         '''
-        test_line = stream.getvalue().splitlines()[-1]
-        if test_line in set(['Failed to find identifier: isbn2', 'Failed to find comments2']):
+        test_line = stream.getvalue().splitlines()[-2]
+        if test_line in set(['Failed to find identifier: isbn', 'Failed to find comments']):
             return True
         return False
     try:
