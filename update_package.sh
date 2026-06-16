@@ -6,7 +6,7 @@ if [[ $EUID == 0 ]]; then
 fi
 
 # running tests
-#calibre-debug -e __init__.py
+calibre-debug -e __init__.py
 if [[ $? -eq 0 ]]; then
     echo 'Tests passed'
 else
@@ -50,7 +50,7 @@ fi
 # Making sure, that package is created from the correct, tagged version
 if [[ "v$version" != $(git describe --exact-match --tags) ]]; then
     echo "Checkout correctly tagged version (v$version)"
-    #exit 1
+    exit 1
 fi
 
 # preparing clean build catalogue for calibre
@@ -91,6 +91,9 @@ fi
 files=$(ls translations | grep "\.mo")
 cp translations/$files $build_dir/translations
 
+# just in case, include LICENSE file
+cp LICENSE $build_dir/LICENSE
+
 # Sometimes calibre throws ImportError when only updating plugins, this solves that problem
 rm "${plugin_dir}/${plugin_name}.zip"
 
@@ -103,6 +106,6 @@ else
 fi
 
 # copying packed plugin
-#cp "$plugin_dir/${plugin_name}.zip" "packages/${plugin_name}_$version.zip"
+cp "$plugin_dir/${plugin_name}.zip" "packages/${plugin_name}_$version.zip"
 
 echo 'Plugin package was generated'
