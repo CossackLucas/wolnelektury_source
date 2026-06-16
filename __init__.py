@@ -21,7 +21,7 @@ from calibre.constants import numeric_version
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
-from calibre_plugins.wolnelektury_source.main import BaseArgs, check_site_for_books
+from calibre_plugins.wolnelektury_source.main import check_site_for_books
 from calibre_plugins.wolnelektury_source.worker import MetadataWorker, WorkerInput
 from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, WOLNELEKTURY_ID
@@ -249,11 +249,25 @@ class WolneLekturySource(Source):
         if abort.is_set():
             return None
 
-        base_args = BaseArgs(abort, log, self, title, authors, identifiers, timeout)
         found_books = []
         if wolnelektury_id is None:
             log.info('Preliminary identification failed. Complex search starts')
-            found_books = check_site_for_books(base_args)
+            data = {
+                'title': title,
+                'authors': authors
+            }
+            rq = Queue()
+            worker_input = WorkerInput(
+                data,
+                log,
+                timeout,
+                self,
+                rq
+            )
+            check_site_for_books(worker_input)
+            if rq.empty():
+                return 'No book could be identified on wolnelektury.pl'
+            found_books = [ iter(rq.get_nowait()) ]
         else:
             log.info('Preliminary identification was a success')
             found_books = [wolnelektury_id]

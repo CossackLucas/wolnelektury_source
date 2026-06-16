@@ -9,7 +9,6 @@ import re
 
 from typing import Optional, Callable
 from contextlib import contextmanager
-from collections import namedtuple
 from datetime import datetime
 from enum import StrEnum
 
@@ -26,6 +25,7 @@ from lxml.html import fromstring, tostring, Element
 from calibre.ebooks.metadata.book.base import Metadata
 
 from calibre_plugins.wolnelektury_source.config import config
+from calibre_plugins.wolnelektury_source.worker import WorkerInput, AuthorWorker
 # pylint: enable=import-error
 
 MAX_RESULTS = 3
@@ -52,9 +52,6 @@ def access_data(thing: Callable, log=None):
     finally:
         thing.close()
 
-BaseArgs = namedtuple('BaseArgs', ['abort', 'log', 'plugin', 'title', 'authors',\
-   'identifiers', 'timeout'])
-
 class SearchCategory(StrEnum):
     '''
     Enum describing search category for WolneLektury.pl queries
@@ -66,20 +63,24 @@ def __build_search_query(query_tokens: list[str], category: SearchCategory) -> s
     return 'https://wolnelektury.pl/szukaj/?q=' + quote_plus(' '.join(query_tokens)) \
         + '=&category=' + category.value
 
-def check_site_for_books(
-    base_args: BaseArgs
-    ) -> list[str]:
+def check_site_for_books(worker_input: WorkerInput, abort):
     '''
     perform search on wolnelektury site, and returns ids
 
     proposed algorithm: check by title, the those results by author
     then author and look for a book
+
+    worker_data.data have to include title and authors list
     '''
-    abort, log, plugin, title, authors, identifiers, timeout = base_args
+    log = worker_input.log
+    plugin = worker_input.plugin
+    title = worker_input.data['title']
+    authors = worker_input.data['authors']
+    timeout = worker_input.timeout
     browser = plugin.browser
 
     if abort.is_set():
-        return []
+        return
 
     title_tokens: list[str] = list(plugin.get_title_tokens(title))
     title_query: str = __build_search_query(title_tokens, SearchCategory.BOOK)
@@ -88,7 +89,7 @@ def check_site_for_books(
     found_books: list[str] = []
     with access_data(browser.open(title_query, timeout=timeout), log) as page:
         if abort.is_set():
-            return []
+            return
         parsed_data = fromstring(page.read().decode(encoding='utf-8'))
         found_books = __extract_books(parsed_data)
         log.info(f'{len(found_books)} book(s) were found')
@@ -98,21 +99,19 @@ def check_site_for_books(
             #pass
 
     if len(found_books) != 0:
-        return found_books
+        return
 
     author_query: str = __build_search_query(plugin.get_author_tokens(authors), SearchCategory.AUTHOR)
     found_authors = []
     with access_data(browser.open(author_query, timeout=timeout), log) as page:
         found_authors = __extract_authors(page)
         if abort.is_set():
-            return []
+            return
 
     for author_id in found_authors:
         author_url = __get_authors_url(author_id)
         with access_data(browser.open(author_url, timeout=timeout), log) as page:
             found_books.extend(__extract_authors_books(page, title_tokens))
-
-    return found_books
 
 ID_REGEX = re.compile(r'/katalog/lektura/([a-z\-]+)/')
 

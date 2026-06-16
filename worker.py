@@ -85,6 +85,7 @@ class BaseWorker(Thread):
 class MetadataWorker(BaseWorker):
     '''
     Specialised worked for exctracting metadata for given id
+    WorkerInput.data have to include book's id from wolnelektury.pl and source relevance
     '''
     def _get_data(self):
         return self.get_metadata()
