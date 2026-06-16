@@ -96,17 +96,20 @@ def check_site_for_books(worker_input: WorkerInput, abort):
         parsed_data = fromstring(page.read().decode(encoding='utf-8'))
         found_books = __extract_books(parsed_data)
         log.info(f'{len(found_books)} book(s) were found')
-        # ToDo: finish check
-        #if len(authors) != 0:
-            #found_books = __check_found_books(found_books, authors)
-            #pass
+        if authors is not None:
+            checked_books = set()
+            for author in authors:
+                checked_books = checked_books | (__check_found_books(found_books, author, plugin))
+            found_books = list(set(found_books) & checked_books)
+        log.info(f'{len(found_books)} book(s) were left after filtering through authors')
+
 
     if len(found_books) != 0:
         rq.put(found_books)
         return
 
     author_query: str = __build_search_query(plugin.get_author_tokens(authors), SearchCategory.AUTHOR)
-    log.info(f'Checking query for author: {author_query}') 
+    log.info(f'Checking query for authors: {author_query}')
     found_authors = []
     with access_data(browser.open(author_query, timeout=timeout), log) as page:
         found_authors = __extract_authors(page)
@@ -141,13 +144,24 @@ def __extract_books(parsed_data: Element) -> list[str]:
 
     return result
 
-def __check_found_books(found_books: list[str], author_tokens: list[str]) -> list[str]:
-    result: list[str] = []
-    # ToDo: check, if authors are matching for given book
-    for book in found_books:
-        print(book)
+def __check_found_books(found_books: list[str], author: str, plugin) -> set[str]:
+    def is_among_tokens(author, tokens):
+        for token in author:
+            if token in tokens:
+                return True
+        return False
 
-    raise NotImplementedError(f'__check_found_books not implemented, {author_tokens}')
+    browser = plugin.browser
+    result: set[str] = set ()
+    author_tokens = set(plugin.get_author_tokens([author]))
+    for book in found_books:
+        with access_data(browser.open(get_xml_url(book), timeout=30)) as page:
+            parsed_data = etree.fromstring(page.read().decode(encoding='utf-8'))
+            authors = __get_authors_from_parsed_xml(parsed_data)
+            if authors is not None and is_among_tokens(author_tokens, set(plugin.get_author_tokens(authors))):
+                result.add(book)
+
+    #raise NotImplementedError(f'__check_found_books not implemented, {author}')
     return result
 
 def __extract_authors(page) -> list[str]:
