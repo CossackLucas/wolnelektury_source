@@ -2,8 +2,6 @@
 Metadata source plugin using wolnelektury.pl page as source
 Main definition file
 '''
-import re
-
 try:
     from queue import Queue
 except ImportError:
@@ -24,7 +22,8 @@ from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 from calibre_plugins.wolnelektury_source.main import check_site_for_books, \
     MetadataWorker, WorkerInput
 from calibre_plugins.wolnelektury_source.config import config
-from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, WOLNELEKTURY_ID
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, \
+    WOLNELEKTURY_ID, WOLNELEKTURY_ID_REGEX
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -158,12 +157,6 @@ class WolneLekturySource(Source):
                 book_id = self.id_from_url(url)
         return self.cached_identifier_to_cover_url(book_id) if book_id is not None else None
 
-    __WOLNELEKTURY_ID_REGEX = (
-        re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/katalog\/lektura\/([a-z\-]+)\/?'),
-        re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/media\/book\/cover\/([a-z\-]+).jpg\/?'),
-        re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/media\/book\/cover_simple\/([a-z\-]+)_[a-zA-Z0-9]+.jpg\/?')
-    )
-
     def id_from_url(self, url):
         '''
         Parse a URL and return a tuple of the form:
@@ -171,7 +164,7 @@ class WolneLekturySource(Source):
         If the URL does not match the pattern for the metadata source,
         return None.
         '''
-        for regex in self.__WOLNELEKTURY_ID_REGEX:
+        for regex in WOLNELEKTURY_ID_REGEX:
             search_result = regex.search(url)
             if search_result is not None:
                 return search_result.group(3)
@@ -268,14 +261,10 @@ class WolneLekturySource(Source):
             if rq.empty():
                 log.error('No book could be identified on wolnelektury.pl')
                 return None
-            #found_books = list( iter(rq.get_nowait()) )
             while not rq.empty():
                 tmp = rq.get_nowait()
                 # ToDo: solve this hack
                 # queue expands 1st list, next are included as are
-                #if isinstance(tmp, list):
-                    #found_books.extend(tmp)
-                #found_books.append(rq.get_nowait())
                 found_books.extend(tmp)
         else:
             log.info('Preliminary identification was a success')
@@ -287,7 +276,7 @@ class WolneLekturySource(Source):
         if len(found_books) == 0:
             log.error('No book could be identified on wolnelektury.pl')
             return None
-        log.info(f'Found books\' ids: {found_books}')
+        log.info(f'Found {len(found_books)} book(s)')
 
         workers_input = []
         for i, book_id in enumerate(found_books, 1):

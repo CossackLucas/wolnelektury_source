@@ -99,7 +99,8 @@ def check_site_for_books(worker_input: WorkerInput, abort):
         if authors is not None:
             checked_books = set()
             for author in authors:
-                checked_books = checked_books | (__check_found_books(found_books, author, plugin))
+                checked_books = checked_books | \
+                    (__check_found_books(found_books, author, timeout, plugin))
             found_books = list(set(found_books) & checked_books)
         log.info(f'{len(found_books)} book(s) were left after filtering through authors')
 
@@ -108,8 +109,12 @@ def check_site_for_books(worker_input: WorkerInput, abort):
         rq.put(found_books)
         return
 
-    author_query: str = __build_search_query(plugin.get_author_tokens(authors), SearchCategory.AUTHOR)
+    author_query: str = __build_search_query(
+        plugin.get_author_tokens(authors),
+        SearchCategory.AUTHOR
+    )
     log.info(f'Checking query for authors: {author_query}')
+
     found_authors = []
     with access_data(browser.open(author_query, timeout=timeout), log) as page:
         found_authors = __extract_authors(page)
@@ -125,7 +130,6 @@ def check_site_for_books(worker_input: WorkerInput, abort):
             log, timeout, plugin, rq
         )
         workers_input.append(temp)
-        log.info(f'Worker for {author_id} is created')
 
     AuthorWorker.run_workers(workers_input, abort)
 
@@ -133,7 +137,6 @@ def __extract_books(parsed_data: Element) -> list[str]:
     result = []
     xpath:str = './/article[@class=\'l-books__item book-container-activator\']'
     found = MAX_RESULTS
-    # ToDo: check iter_find instead of findall
     for element in parsed_data.findall(xpath):
         if found == 0:
             break
@@ -144,7 +147,7 @@ def __extract_books(parsed_data: Element) -> list[str]:
 
     return result
 
-def __check_found_books(found_books: list[str], author: str, plugin) -> set[str]:
+def __check_found_books(found_books: list[str], author: str, timeout, plugin) -> set[str]:
     def is_among_tokens(author, tokens):
         for token in author:
             if token in tokens:
@@ -152,16 +155,18 @@ def __check_found_books(found_books: list[str], author: str, plugin) -> set[str]
         return False
 
     browser = plugin.browser
-    result: set[str] = set ()
+    result: set[str] = set()
     author_tokens = set(plugin.get_author_tokens([author]))
+    # ToDo: does it need its own workers?
     for book in found_books:
-        with access_data(browser.open(get_xml_url(book), timeout=30)) as page:
+        with access_data(browser.open(get_xml_url(book), timeout=timeout)) as page:
             parsed_data = etree.fromstring(page.read().decode(encoding='utf-8'))
             authors = __get_authors_from_parsed_xml(parsed_data)
-            if authors is not None and is_among_tokens(author_tokens, set(plugin.get_author_tokens(authors))):
+            if authors is not None and is_among_tokens(
+                author_tokens, set(plugin.get_author_tokens(authors))
+            ):
                 result.add(book)
 
-    #raise NotImplementedError(f'__check_found_books not implemented, {author}')
     return result
 
 def __extract_authors(page) -> list[str]:
@@ -246,7 +251,7 @@ class MetadataWorker(BaseWorker):
 
         return result
 # pylint: enable=too-few-public-methods
- 
+
 def get_api_url(wolnelektury_id: str) -> str:
     ''' 
     Generate api url from wolnelektury id (nothing is checked)

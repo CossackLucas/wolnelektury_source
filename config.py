@@ -24,7 +24,7 @@ class PluginConfig:
     '''
     class used in everything related to plugin's config
     '''
-# Localization is ~/.config/calibre/metadata_sources/WolneLektury.json
+    # Localization is ~/.config/calibre/metadata_sources/WolneLektury.json
     __config = JSONConfig(f'metadata_sources/{PLUGIN_NAME}.json')
     __options = [
         Option('html_comments', 'bool', True, _('HTML in comments'),

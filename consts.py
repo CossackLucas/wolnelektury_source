@@ -1,7 +1,6 @@
 '''
 Source of main data
 '''
-
 import re
 
 # pylint: disable=import-error
@@ -24,3 +23,10 @@ COVER_NAMES = {'cover': _('Regular cover'), 'simple_cover': _('Simplified cover'
 
 ID_REGEX = re.compile(r'/katalog/lektura/([a-z\-]+)/')
 AUTHOR_ID_REGEX = re.compile(r'/katalog/autor/([a-z\-]+)/')
+WOLNELEKTURY_ID_REGEX = (
+    re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/katalog\/lektura\/([a-z\-]+)\/?'),
+    re.compile(r'(https?:\/\/)(www.)?wolnelektury.pl\/media\/book\/cover\/([a-z\-]+).jpg\/?'),
+    re.compile(
+        r'(https?:\/\/)(www.)?wolnelektury.pl\/media\/book\/cover_simple\/([a-z\-]+)_[a-zA-Z0-9]+.jpg\/?'
+    )
+)
