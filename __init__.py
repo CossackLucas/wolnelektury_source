@@ -264,17 +264,11 @@ class WolneLekturySource(Source):
                 self,
                 rq
             )
-            found_books = check_site_for_books(worker_input, abort)
-            # ToDO: remove temp hacks
-            if not rq.empty():
-                raise NotImplementedError('nope')
-            rq.put(found_books)
+            check_site_for_books(worker_input, abort)
             if rq.empty():
                 log.error('No book could be identified on wolnelektury.pl')
                 return None
-            found_books = []
-            for book in iter(rq.get_nowait()):
-                found_books.append(book)
+            found_books = list( iter(rq.get_nowait()) )
         else:
             log.info('Preliminary identification was a success')
             found_books = [wolnelektury_id]

@@ -5,13 +5,12 @@ Custom functions used by plugin
 # ToDo: at the moment json is only needed because of access_data
 # try to remove it
 import json
-import re
 
 from typing import Optional, Callable
 from contextlib import contextmanager
+from contextlib import closing
 from datetime import datetime
 from enum import StrEnum
-from contextlib import closing
 
 try:
     from urllib.parse import quote_plus
@@ -26,7 +25,8 @@ from lxml.html import fromstring, tostring, Element
 from calibre.ebooks.metadata.book.base import Metadata
 
 from calibre_plugins.wolnelektury_source.config import config
-from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, COVER_NAMES
+from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, COVER_NAMES, \
+    AUTHOR_ID_REGEX, ID_REGEX
 from calibre_plugins.wolnelektury_source.worker import WorkerInput, AuthorWorker, BaseWorker
 # pylint: enable=import-error
 
@@ -80,6 +80,7 @@ def check_site_for_books(worker_input: WorkerInput, abort):
     authors = worker_input.data['authors']
     timeout = worker_input.timeout
     browser = plugin.browser
+    rq = worker_input.result_queue
 
     if abort.is_set():
         return
@@ -101,23 +102,28 @@ def check_site_for_books(worker_input: WorkerInput, abort):
             #pass
 
     if len(found_books) != 0:
-        return found_books
+        rq.put(found_books)
+        return
 
     author_query: str = __build_search_query(plugin.get_author_tokens(authors), SearchCategory.AUTHOR)
+    log.info(f'Checking query for author: {author_query}') 
     found_authors = []
     with access_data(browser.open(author_query, timeout=timeout), log) as page:
         found_authors = __extract_authors(page)
         if abort.is_set():
             return
+    log.info(f'{len(found_authors)} authors found')
+    log.info(found_authors)
 
+    workers_input = []
     for author_id in found_authors:
-        author_url = __get_authors_url(author_id)
-        with access_data(browser.open(author_url, timeout=timeout), log) as page:
-            found_books.extend(__extract_authors_books(page, title_tokens))
+        temp = WorkerInput(
+            { 'url': __get_authors_url(author_id), 'title': title },
+            log, timeout, plugin, rq
+        )
+        workers_input.append(temp)
 
-    return found_books
-
-ID_REGEX = re.compile(r'/katalog/lektura/([a-z\-]+)/')
+    AuthorWorker.run_workers(workers_input, abort)
 
 def __extract_books(parsed_data: Element) -> list[str]:
     result = []
@@ -143,8 +149,6 @@ def __check_found_books(found_books: list[str], author_tokens: list[str]) -> lis
     raise NotImplementedError(f'__check_found_books not implemented, {author_tokens}')
     return result
 
-AUTHOR_ID_REGEX = re.compile(r'/katalog/autor/([a-z\-]+)/')
-
 def __extract_authors(page) -> list[str]:
     result = []
     read_data = page.read().decode(encoding='utf-8')
@@ -161,28 +165,8 @@ def __extract_authors(page) -> list[str]:
 
     return result
 
-def __extract_authors_books(page, title_tokens: list[str]) -> list[str]:
-    result = []
-    read_data = page.read().decode(encoding='utf-8')
-    parsed_data = fromstring(read_data)
-    not_check_tokens = len(title_tokens) != 0
-
-    xpath:str = './/article[@class=\'l-books__item book-container-activator\']'
-    no_found = MAX_RESULTS
-    for book in parsed_data.findall(xpath):
-        if no_found == 0:
-            break
-        no_found -= 1
-        book_url: str = book[0][0].get('href')
-        if (found := ID_REGEX.match(book_url)) is None:
-            continue
-        for word in found[1].split('-'):
-            if not_check_tokens and (word not in title_tokens):
-                continue
-            result.append(found[1])
-
-    return result
-
+# pylint does not see worker.py
+# pylint: disable=too-few-public-methods
 class MetadataWorker(BaseWorker):
     '''
     Specialised worked for exctracting metadata for given id
@@ -246,6 +230,7 @@ class MetadataWorker(BaseWorker):
         self.log.info(f'Search finished with {len(result)} urls found')
 
         return result
+# pylint: enable=too-few-public-methods
  
 def get_api_url(wolnelektury_id: str) -> str:
     ''' 
