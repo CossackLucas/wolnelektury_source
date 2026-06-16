@@ -122,6 +122,7 @@ def check_site_for_books(worker_input: WorkerInput, abort):
             log, timeout, plugin, rq
         )
         workers_input.append(temp)
+        log.info(f'Worker for {author_id} is created')
 
     AuthorWorker.run_workers(workers_input, abort)
 

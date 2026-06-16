@@ -42,7 +42,7 @@ class BaseWorker(Thread):
                 self.result_queue.put(result)
         # ToDo: probably should be more preceise
         except Exception as e:
-            self.log.exception('Worker could not finish. Exception:')
+            self.log.exception('Worker could not finish. Exception')
 
     def _get_data(self):
         '''

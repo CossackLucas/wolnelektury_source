@@ -268,7 +268,15 @@ class WolneLekturySource(Source):
             if rq.empty():
                 log.error('No book could be identified on wolnelektury.pl')
                 return None
-            found_books = list( iter(rq.get_nowait()) )
+            #found_books = list( iter(rq.get_nowait()) )
+            while not rq.empty():
+                tmp = rq.get_nowait()
+                # ToDo: solve this hack
+                # queue expands 1st list, next are included as are
+                #if isinstance(tmp, list):
+                    #found_books.extend(tmp)
+                #found_books.append(rq.get_nowait())
+                found_books.extend(tmp)
         else:
             log.info('Preliminary identification was a success')
             found_books = [wolnelektury_id]
