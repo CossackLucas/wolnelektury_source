@@ -21,8 +21,8 @@ from calibre.constants import numeric_version
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
-from calibre_plugins.wolnelektury_source.main import check_site_for_books
-from calibre_plugins.wolnelektury_source.worker import MetadataWorker, WorkerInput
+from calibre_plugins.wolnelektury_source.main import check_site_for_books, \
+    MetadataWorker, WorkerInput
 from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, WOLNELEKTURY_ID
 # pylint: enable=import-error
@@ -264,10 +264,17 @@ class WolneLekturySource(Source):
                 self,
                 rq
             )
-            check_site_for_books(worker_input)
+            found_books = check_site_for_books(worker_input, abort)
+            # ToDO: remove temp hacks
+            if not rq.empty():
+                raise NotImplementedError('nope')
+            rq.put(found_books)
             if rq.empty():
-                return 'No book could be identified on wolnelektury.pl'
-            found_books = [ iter(rq.get_nowait()) ]
+                log.error('No book could be identified on wolnelektury.pl')
+                return None
+            found_books = []
+            for book in iter(rq.get_nowait()):
+                found_books.append(book)
         else:
             log.info('Preliminary identification was a success')
             found_books = [wolnelektury_id]
@@ -276,7 +283,9 @@ class WolneLekturySource(Source):
             return None
 
         if len(found_books) == 0:
-            return 'The book could not be identified on wolnelektury.pl'
+            log.error('No book could be identified on wolnelektury.pl')
+            return None
+        log.info(f'Found books\' ids: {found_books}')
 
         workers_input = []
         for i, book_id in enumerate(found_books, 1):
@@ -319,13 +328,13 @@ class WolneLekturySource(Source):
         if urls is None:
             log.info('No cached cover found, running identify')
             rq = Queue()
-            result = self.identify(log, rq, abort, title, authors, identifiers, timeout)
+            self.identify(log, rq, abort, title, authors, identifiers, timeout)
 
             if abort.is_set():
                 return None
 
             if rq.empty():
-                return result
+                return None
             book = rq.get()
             # ToDo: is it right?
             if book.source_relevance == 1:

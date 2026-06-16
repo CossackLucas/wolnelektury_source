@@ -11,6 +11,7 @@ from typing import Optional, Callable
 from contextlib import contextmanager
 from datetime import datetime
 from enum import StrEnum
+from contextlib import closing
 
 try:
     from urllib.parse import quote_plus
@@ -25,7 +26,8 @@ from lxml.html import fromstring, tostring, Element
 from calibre.ebooks.metadata.book.base import Metadata
 
 from calibre_plugins.wolnelektury_source.config import config
-from calibre_plugins.wolnelektury_source.worker import WorkerInput, AuthorWorker
+from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, COVER_NAMES
+from calibre_plugins.wolnelektury_source.worker import WorkerInput, AuthorWorker, BaseWorker
 # pylint: enable=import-error
 
 MAX_RESULTS = 3
@@ -99,7 +101,7 @@ def check_site_for_books(worker_input: WorkerInput, abort):
             #pass
 
     if len(found_books) != 0:
-        return
+        return found_books
 
     author_query: str = __build_search_query(plugin.get_author_tokens(authors), SearchCategory.AUTHOR)
     found_authors = []
@@ -112,6 +114,8 @@ def check_site_for_books(worker_input: WorkerInput, abort):
         author_url = __get_authors_url(author_id)
         with access_data(browser.open(author_url, timeout=timeout), log) as page:
             found_books.extend(__extract_authors_books(page, title_tokens))
+
+    return found_books
 
 ID_REGEX = re.compile(r'/katalog/lektura/([a-z\-]+)/')
 
@@ -179,6 +183,70 @@ def __extract_authors_books(page, title_tokens: list[str]) -> list[str]:
 
     return result
 
+class MetadataWorker(BaseWorker):
+    '''
+    Specialised worked for exctracting metadata for given id
+    WorkerInput.data have to include book's id from wolnelektury.pl and source relevance
+    '''
+    def _get_data(self):
+        return self.get_metadata()
+
+    def get_metadata(self) -> Optional[Metadata]:
+        '''
+        gets metadata from wolnelektury for given book by it's id
+        '''
+        wolnelektury_id = self.basic_data[WOLNELEKTURY_ID]
+        wolnelektury_url: str = get_xml_url(wolnelektury_id)
+        me = None
+        self.log.info(f'Trying to reach book page {wolnelektury_url}')
+        with closing(self.browser.open(wolnelektury_url, timeout=self.timeout)) as page:
+            self.log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
+            read_data = page.read().decode(encoding='utf-8')
+            parsed_data = etree.fromstring(read_data)
+            me = extract_metadata_xml(parsed_data)
+            me.set_identifier(WOLNELEKTURY_ID, wolnelektury_id)
+            me.source_relevance = self.basic_data['relevance']
+
+            cover_urls = self.__get_cover_urls(wolnelektury_id)
+            if len(cover_urls) != 0:
+                me.has_cover = True
+                self.plugin.cache_identifier_to_cover_url(wolnelektury_id, cover_urls)
+        self.plugin.clean_downloaded_metadata(me)
+
+        return me
+
+    # ToDo: should get_best_cover come back?
+    def __get_cover_urls(self, wolnelektury_id: str) -> list[str]:
+        '''
+        get cover's urls from wolnelektury.pl. If none are found, result is empty
+        '''
+        self.log.info(f"Getting cover urls for {wolnelektury_id}")
+        result: list[str] = []
+
+        user_cover_names = [ config.get_pref('prefered_cover') ]
+        user_cover_names.extend(set(COVER_NAMES.keys()) - set(user_cover_names))
+        self.log.info(f'Cover types order is: {user_cover_names}')
+
+        max_covers = config.get_pref('max_covers')
+        self.log.info(f'max_covers preference is {max_covers}')
+
+        with closing(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
+            self.log.info("Parsing data for covers")
+            parsed_data = json.load(page)
+            for i, cover_name in enumerate(user_cover_names):
+                if max_covers == i:
+                    self.log.info(
+                        f'Stopping search for covers early at {i}th search, found {len(result)} url(s)'
+                        )
+                    break
+                url = parsed_data.get(cover_name)
+                if url is not None:
+                    result.append(url)
+
+        self.log.info(f'Search finished with {len(result)} urls found')
+
+        return result
+ 
 def get_api_url(wolnelektury_id: str) -> str:
     ''' 
     Generate api url from wolnelektury id (nothing is checked)
