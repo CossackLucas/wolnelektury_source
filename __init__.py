@@ -17,6 +17,7 @@ except ImportError:
 
 # pylint: disable=import-error
 from calibre.ebooks.metadata.sources.base import Source, Option
+from calibre.ebooks.metadata.book.base import Metadata
 from calibre.gui2.metadata.config import ConfigWidget
 from calibre.utils.localization import _
 from calibre.constants import numeric_version
@@ -70,9 +71,11 @@ class WolneLekturySource(Source):
     config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
         _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
         _('Please report bugs through the') + \
-        ' <a href="https://www.mobileread.com/forums/showthread.php?t=373972">MobileRead</a>' + _(' forum or ')+\
-        '<a href="https://github.com/CossackLucas/wolnelektury_source">GitHub</a>'+_('.') + '<br>' \
-        + _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
+        ' <a href="https://www.mobileread.com/forums/showthread.php?t=373972">MobileRead</a>' + \
+        _(' forum or ')+\
+        '<a href="https://github.com/CossackLucas/wolnelektury_source">GitHub</a>' + \
+        _('.') + '<br>' +\
+        _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
     can_get_multiple_covers = True
     prefer_results_with_isbn = False
     options: list[Option] = config.get_options()
@@ -135,8 +138,8 @@ class WolneLekturySource(Source):
         There are only to certain identifiers to draw from here:
         wolnelektury_id and potentialy url itself
         '''
-        book_id = None
-        book_url = None
+        book_id: Optional[str] = None
+        book_url: Optional[str] = None
 
         if book_id := identifiers.get(WOLNELEKTURY_ID):
             book_url = f'https://wolnelektury.pl/katalog/lektura/{book_id}/'
@@ -175,10 +178,9 @@ class WolneLekturySource(Source):
 
         return None
 
-    # ToDo: type annotitions
     # pylint: disable=dangerous-default-value
-    def identify_results_keygen(self, title=None, authors=None,
-            identifiers={}):
+    def identify_results_keygen(self, title: Optional[str]=None, authors: Optional[list]=None,
+            identifiers={}) -> InternalMetadataCompareKeyGen:
         '''
         Return a function that is used to generate a key that can sort Metadata
         objects by their relevance given a search query (title, authors,
@@ -268,7 +270,6 @@ class WolneLekturySource(Source):
                 return
             while not rq.empty():
                 tmp = rq.get_nowait()
-                # ToDo: solve this hack
                 # queue expands 1st list, next are included as are
                 found_books.extend(tmp)
         else:
@@ -305,7 +306,8 @@ class WolneLekturySource(Source):
 
     # pylint: disable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
     def download_cover(self, log: ThreadSafeLog, result_queue: Queue, abort: Event,
-            title: Optional[str]=None, authors: Optional[list]=None, identifiers={}, timeout=30, get_best_cover=False):
+            title: Optional[str]=None, authors: Optional[list]=None, identifiers={},
+            timeout=30, get_best_cover=False):
         '''
         Download a cover and put it into result_queue. The parameters all have
         the same meaning as for :meth:`identify`. Put (self, cover_data) into
@@ -319,7 +321,7 @@ class WolneLekturySource(Source):
         multiple covers, it should only get the "best" one.
         '''
         log.info('Downloading cover')
-        urls = self.get_cached_cover_url(identifiers)
+        urls: list[str] = self.get_cached_cover_url(identifiers)
         if urls is None:
             log.info('No cached cover found, running identify')
             rq = Queue()
@@ -330,12 +332,12 @@ class WolneLekturySource(Source):
 
             if rq.empty():
                 return
-            book = rq.get()
-            # ToDo: is it right?
+            book: Metadata = rq.get()
+            # Just in case we limit ourselves to most relevant identification result
             if book.source_relevance == 1:
                 urls = self.get_cached_cover_url(book.get_identifiers())
             else:
-                raise RuntimeError('Should not be accesible!')
+                raise RuntimeError('Identification has return faulty result!')
         else:
             log.info('Cached covers found.')
 

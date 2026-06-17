@@ -167,7 +167,6 @@ def __check_found_books(found_books: list[str], author: str, timeout: int,
 
     browser: Browser = plugin.browser
     result: set[str] = set()
-    # ToDo: check this type
     author_tokens = set(plugin.get_author_tokens([author]))
     # ToDo: does it need its own workers?
     for book in found_books:

@@ -47,9 +47,12 @@ class BaseWorker(Thread):
         try:
             if (result := self._get_data()) is not None:
                 self.result_queue.put(result)
-        # ToDo: probably should be more preceise
-        except Exception as e:
+
+        # probably should be more preceise, but for threads it's enough
+        # pylint: disable=broad-exception-caught
+        except Exception:
             self.log.exception('Worker could not finish. Exception')
+        # pylint: enable=broad-exception-caught
 
     def _get_data(self) -> Optional[Any]:
         '''
@@ -105,18 +108,21 @@ class AuthorWorker(BaseWorker):
         title_tokens = set( self.plugin.get_title_tokens(self.basic_data['title']) )
         not_check_tokens = len(title_tokens) != 0
 
-        xpath:str = './/article[@class=\'l-books__item book-container-activator\']'
+        xpath: str = './/article[@class=\'l-books__item book-container-activator\']'
         no_to_find = MAX_RESULTS
         for book in parsed_data.findall(xpath):
             if no_to_find == 0:
                 break
             book_url: str = book[0][0].get('href')
+            #book_url: str = book.find('figure/a').get('href')
+            # 10 times slower
             found = ID_REGEX.match(book_url)
             if found is None:
                 continue
 
-            # ToDo: should it be find() instead of moving through indexes?
+
             book_title: Optional[str] = book[0][0][0].get('alt')
+            #book_title: Optional[str] = book.find('figure/a/img').get('alt')
             if book_title is None:
                 continue
             title_tokens = set(self.plugin.get_title_tokens(book_title))
