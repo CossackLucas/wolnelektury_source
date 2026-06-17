@@ -50,8 +50,8 @@ class WolneLekturySource(Source):
     author = 'Łukasz Kozak'
     description = _('Download metadata and covers from site wolnelektury.pl')
     version: tuple[int, int, int] = PLUGIN_VERSION
-    # 0.5.0 checked with 9.0.0
-    minimum_calibre_version = (9, 0, 0)
+    # 0.5.1 checked with 6.12.0
+    minimum_calibre_version = (6, 12, 0)
     capabilities = frozenset(['identify', 'cover'])
     touched_fields = frozenset([
         'title',
@@ -300,7 +300,6 @@ class WolneLekturySource(Source):
             return
 
         log.info('Starting metadata download')
-        log.info(f'max_covers preference is {self.prefs['max_covers']}')
         MetadataWorker.run_workers(workers_input, abort)
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
@@ -350,6 +349,10 @@ class WolneLekturySource(Source):
 
         if abort.is_set():
             return
+
+        # calibre before 9.0.0 must have been on python 3.11, because f-string
+        # broke when the same quotation mark was used
+        log.info(f'max_covers preference is {self.prefs["max_covers"]}')
         self.download_multiple_covers(
             title,
             authors,

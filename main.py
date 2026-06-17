@@ -2,8 +2,6 @@
 Custom functions used by plugin
 '''
 # pylint: disable=c-extension-no-member
-# ToDo: at the moment json is only needed because of access_data
-# try to remove it
 import json
 
 from typing import Optional, Callable
@@ -41,6 +39,7 @@ from calibre_plugins.wolnelektury_source.worker import WorkerInput, AuthorWorker
 
 MAX_RESULTS = 3
 
+# ToDo: should be looked into
 @contextmanager
 def access_data(thing: Callable, log=None):
     '''
@@ -150,7 +149,6 @@ def __extract_books(parsed_data: Element) -> list[str]:
     for element in parsed_data.findall(xpath):
         if found == 0:
             break
-        # ToDo: replace indexing with .find()?
         book_url: str = element[0][0].get('href')
         if book_match := ID_REGEX.match(book_url):
             result.append(book_match[1])
@@ -246,7 +244,7 @@ class MetadataWorker(BaseWorker):
 
         with closing(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
             self.log.info("Parsing data for covers")
-            parsed_data = json.load(page)
+            parsed_data: dict = json.load(page)
             for i, cover_name in enumerate(user_cover_names):
                 if max_covers == i:
                     self.log.info(
