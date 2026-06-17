@@ -88,6 +88,7 @@ class BaseWorker(Thread):
             if not is_alive:
                 break
 
+# ToDo: should be moved to main.py, to use access_data instead of clsoing?
 class AuthorWorker(BaseWorker):
     '''
     Specialised worked for exctracting author's books for given id

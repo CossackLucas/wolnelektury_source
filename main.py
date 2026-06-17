@@ -6,7 +6,6 @@ import json
 
 from typing import Optional, Callable
 from contextlib import contextmanager
-from contextlib import closing
 from datetime import datetime
 from enum import Enum
 from threading import Event
@@ -35,6 +34,8 @@ from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, COVER_NAMES, \
     AUTHOR_ID_REGEX, ID_REGEX
 from calibre_plugins.wolnelektury_source.worker import WorkerInput, AuthorWorker, BaseWorker
+
+from mechanize._response import response_seek_wrapper as Response
 # pylint: enable=import-error
 
 MAX_RESULTS = 3
@@ -43,17 +44,14 @@ MAX_RESULTS = 3
 @contextmanager
 def access_data(thing: Callable, log=None):
     '''
-    context manager trying to service all possible issues when getting data via Internet
+    context manager trying to service all possible issues when parsing data
     '''
     try:
         yield thing
-    except AttributeError as e:
-        if log is not None:
-            log.exception(f'{e}')
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
         if log is not None:
             log.exception(f'Error decoding data:\n{e}')
-    except UnicodeDecodeError:
+    except UnicodeDecodeError as e:
         if log is not None:
             log.exception(f'Error decoding data:\n{e}')
     except etree.LxmlError as e:
@@ -179,7 +177,7 @@ def __check_found_books(found_books: list[str], author: str, timeout: int,
 
     return result
 
-def __extract_authors(page: bytes) -> list[str]:
+def __extract_authors(page: Response) -> list[str]:
     result = []
     read_data = page.read().decode(encoding='utf-8')
     parsed_data = fromstring(read_data)
@@ -187,7 +185,7 @@ def __extract_authors(page: bytes) -> list[str]:
     xpath: str = './/ul[@class=\'c-search-result c-search-result-author\']'
     author_data = parsed_data.find(xpath)
     if author_data is None:
-        author_data = []
+        return []
     for author in author_data:
         url = author[0].get('href')
         if (found := AUTHOR_ID_REGEX.match(url)) is not None:
@@ -213,7 +211,7 @@ class MetadataWorker(BaseWorker):
         wolnelektury_url: str = get_xml_url(wolnelektury_id)
         me: Optional[Metadata] = None
         self.log.info(f'Trying to reach book page {wolnelektury_url}')
-        with closing(self.browser.open(wolnelektury_url, timeout=self.timeout)) as page:
+        with access_data(self.browser.open(wolnelektury_url, timeout=self.timeout)) as page:
             self.log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
             read_data = page.read().decode(encoding='utf-8')
             parsed_data = etree.fromstring(read_data)
@@ -242,7 +240,7 @@ class MetadataWorker(BaseWorker):
 
         max_covers = config.get_pref('max_covers')
 
-        with closing(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
+        with access_data(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
             self.log.info("Parsing data for covers")
             parsed_data: dict = json.load(page)
             for i, cover_name in enumerate(user_cover_names):
