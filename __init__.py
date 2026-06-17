@@ -2,6 +2,9 @@
 Metadata source plugin using wolnelektury.pl page as source
 Main definition file
 '''
+from typing import Optional
+from threading import Event
+
 try:
     from queue import Queue
 except ImportError:
@@ -13,9 +16,11 @@ except ImportError:
     from urllib import HTTPError
 
 # pylint: disable=import-error
-from calibre.ebooks.metadata.sources.base import Source
+from calibre.ebooks.metadata.sources.base import Source, Option
+from calibre.gui2.metadata.config import ConfigWidget
 from calibre.utils.localization import _
 from calibre.constants import numeric_version
+from calibre.utils.logging import ThreadSafeLog
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 
@@ -40,12 +45,12 @@ class WolneLekturySource(Source):
     '''
     source plugin definition
     '''
-    name = PLUGIN_NAME
+    name: str = PLUGIN_NAME
     author = 'Łukasz Kozak'
     description = _('Download metadata and covers from site wolnelektury.pl')
-    version = PLUGIN_VERSION
-    # 0.3.0 checked with 6.12
-    minimum_calibre_version = (6, 12, 0)
+    version: tuple[int, int, int] = PLUGIN_VERSION
+    # 0.5.0 checked with 9.0.0
+    minimum_calibre_version = (9, 0, 0)
     capabilities = frozenset(['identify', 'cover'])
     touched_fields = frozenset([
         'title',
@@ -61,7 +66,6 @@ class WolneLekturySource(Source):
     has_html_comments = True
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
-    # ToDo: to be repaired 
     cached_cover_url_is_reliable = True
     config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
         _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
@@ -71,10 +75,10 @@ class WolneLekturySource(Source):
         + _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
     can_get_multiple_covers = True
     prefer_results_with_isbn = False
-    options = config.get_options()
+    options: list[Option] = config.get_options()
 
     @property
-    def prefs(self):
+    def prefs(self) -> dict:
         '''
         redifined dictionary of preferences
         '''
@@ -85,13 +89,13 @@ class WolneLekturySource(Source):
         return self._config_obj
         # pylint: enable=access-member-before-definition,attribute-defined-outside-init
 
-    def is_configured(self):
+    def is_configured(self) -> bool:
         '''
         probably won't change, defaults will be enough
         '''
         return True
 
-    def is_customizable(self):
+    def is_customizable(self) -> bool:
         '''
         Done
         '''
@@ -101,7 +105,7 @@ class WolneLekturySource(Source):
     #def config_widget(self):
         #return super().config_widget()
 
-    def save_settings(self, config_widget):
+    def save_settings(self, config_widget: ConfigWidget):
         '''
         needed as 'max_covers' already used and if set to 0, calibre uses it and shows no covers
         '''
@@ -114,7 +118,7 @@ class WolneLekturySource(Source):
         self.prefs['max_covers'] = clear_max_covers(self.prefs['max_covers'])
 
     # working methods
-    def get_book_url(self, identifiers):
+    def get_book_url(self, identifiers: dict) -> Optional[tuple]:
         '''
         Return a 3-tuple or None. The 3-tuple is of the form:
         (identifier_type, identifier_value, URL).
@@ -143,7 +147,7 @@ class WolneLekturySource(Source):
             return (WOLNELEKTURY_ID, book_id, book_url)
         return None
 
-    def get_cached_cover_url(self, identifiers):
+    def get_cached_cover_url(self, identifiers: dict) -> Optional[list[str]]:
         '''
         Return cached cover URL for the book identified by
         the identifiers dictionary or None if no such URL exists.
@@ -157,7 +161,7 @@ class WolneLekturySource(Source):
                 book_id = self.id_from_url(url)
         return self.cached_identifier_to_cover_url(book_id) if book_id is not None else None
 
-    def id_from_url(self, url):
+    def id_from_url(self, url: str) -> str:
         '''
         Parse a URL and return a tuple of the form:
         (identifier_type, identifier_value).
@@ -171,6 +175,7 @@ class WolneLekturySource(Source):
 
         return None
 
+    # ToDo: type annotitions
     # pylint: disable=dangerous-default-value
     def identify_results_keygen(self, title=None, authors=None,
             identifiers={}):
@@ -193,8 +198,8 @@ class WolneLekturySource(Source):
     # pylint: enable=dangerous-default-value
 
     # pylint: disable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
-    def identify(self, log, result_queue, abort, title=None, authors=None,
-            identifiers={}, timeout=30):
+    def identify(self, log: ThreadSafeLog, result_queue: Queue, abort: Event,
+        title: Optional[str]=None, authors: Optional[list]=None, identifiers={}, timeout=30):
         '''
         Identify a book by its Title/Author/ISBN/etc.
 
@@ -232,7 +237,7 @@ class WolneLekturySource(Source):
                  of the error suitable for showing to the user
         '''
         if abort.is_set():
-            return None
+            return
 
         log.info('Identification of a book')
 
@@ -240,7 +245,7 @@ class WolneLekturySource(Source):
         if (wolnelektury_id is None) and (search_result := self.get_book_url(identifiers)):
             wolnelektury_id = search_result[1]
         if abort.is_set():
-            return None
+            return
 
         found_books = []
         if wolnelektury_id is None:
@@ -260,7 +265,7 @@ class WolneLekturySource(Source):
             check_site_for_books(worker_input, abort)
             if rq.empty():
                 log.error('No book could be identified on wolnelektury.pl')
-                return None
+                return
             while not rq.empty():
                 tmp = rq.get_nowait()
                 # ToDo: solve this hack
@@ -271,11 +276,11 @@ class WolneLekturySource(Source):
             found_books = [wolnelektury_id]
 
         if abort.is_set():
-            return None
+            return
 
         if len(found_books) == 0:
             log.error('No book could be identified on wolnelektury.pl')
-            return None
+            return
         log.info(f'Found {len(found_books)} book(s)')
 
         workers_input = []
@@ -291,18 +296,16 @@ class WolneLekturySource(Source):
             workers_input.append(w)
 
         if abort.is_set():
-            return None
+            return
 
         log.info('Starting metadata download')
         log.info(f'max_covers preference is {self.prefs['max_covers']}')
         MetadataWorker.run_workers(workers_input, abort)
-
-        return None
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
     # pylint: disable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
-    def download_cover(self, log, result_queue, abort,
-            title=None, authors=None, identifiers={}, timeout=30, get_best_cover=False):
+    def download_cover(self, log: ThreadSafeLog, result_queue: Queue, abort: Event,
+            title: Optional[str]=None, authors: Optional[list]=None, identifiers={}, timeout=30, get_best_cover=False):
         '''
         Download a cover and put it into result_queue. The parameters all have
         the same meaning as for :meth:`identify`. Put (self, cover_data) into
@@ -323,29 +326,28 @@ class WolneLekturySource(Source):
             self.identify(log, rq, abort, title, authors, identifiers, timeout)
 
             if abort.is_set():
-                return None
+                return
 
             if rq.empty():
-                return None
+                return
             book = rq.get()
             # ToDo: is it right?
             if book.source_relevance == 1:
                 urls = self.get_cached_cover_url(book.get_identifiers())
             else:
-                # ToDo: should be changed to never?
                 raise RuntimeError('Should not be accesible!')
         else:
             log.info('Cached covers found.')
 
         if abort.is_set():
-            return None
+            return
 
         if len(urls) == 0:
             log.error('No book cover found')
-            return None
+            return
 
         if abort.is_set():
-            return None
+            return
         self.download_multiple_covers(
             title,
             authors,
@@ -356,8 +358,6 @@ class WolneLekturySource(Source):
             abort,
             log
         )
-
-        return None
     # pylint: enable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
 
 if __name__ == "__main__":

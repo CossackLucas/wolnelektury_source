@@ -11,11 +11,17 @@ from contextlib import contextmanager
 from contextlib import closing
 from datetime import datetime
 from enum import StrEnum
+from threading import Event
 
 try:
     from urllib.parse import quote_plus
 except ImportError:
     from urlib import quote_plus
+
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 # lxml.etree does not have exposed c-module
 from lxml import etree
@@ -23,6 +29,9 @@ from lxml.html import fromstring, tostring, Element
 
 # pylint: disable=import-error
 from calibre.ebooks.metadata.book.base import Metadata
+from calibre.ebooks.metadata.sources.base import Source
+from calibre.utils.browser import Browser
+from calibre.utils.logging import ThreadSafeLog
 
 from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, COVER_NAMES, \
@@ -65,7 +74,7 @@ def __build_search_query(query_tokens: list[str], category: SearchCategory) -> s
     return 'https://wolnelektury.pl/szukaj/?q=' + quote_plus(' '.join(query_tokens)) \
         + '=&category=' + category.value
 
-def check_site_for_books(worker_input: WorkerInput, abort):
+def check_site_for_books(worker_input: WorkerInput, abort: Event):
     '''
     perform search on wolnelektury site, and returns ids
 
@@ -74,13 +83,13 @@ def check_site_for_books(worker_input: WorkerInput, abort):
 
     worker_data.data have to include title and authors list
     '''
-    log = worker_input.log
-    plugin = worker_input.plugin
-    title = worker_input.data['title']
-    authors = worker_input.data['authors']
-    timeout = worker_input.timeout
-    browser = plugin.browser
-    rq = worker_input.result_queue
+    log: ThreadSafeLog = worker_input.log
+    plugin: Source = worker_input.plugin
+    title: Optional[str] = worker_input.data['title']
+    authors: Optional[list[str]] = worker_input.data['authors']
+    timeout: int = worker_input.timeout
+    browser: Browser = plugin.browser
+    rq: Queue = worker_input.result_queue
 
     if abort.is_set():
         return
@@ -140,6 +149,7 @@ def __extract_books(parsed_data: Element) -> list[str]:
     for element in parsed_data.findall(xpath):
         if found == 0:
             break
+        # ToDo: replace indexing with .find()?
         book_url: str = element[0][0].get('href')
         if book_match := ID_REGEX.match(book_url):
             result.append(book_match[1])
@@ -147,15 +157,17 @@ def __extract_books(parsed_data: Element) -> list[str]:
 
     return result
 
-def __check_found_books(found_books: list[str], author: str, timeout, plugin) -> set[str]:
+def __check_found_books(found_books: list[str], author: str, timeout: int,
+    plugin: Source) -> set[str]:
     def is_among_tokens(author, tokens):
         for token in author:
             if token in tokens:
                 return True
         return False
 
-    browser = plugin.browser
+    browser: Browser = plugin.browser
     result: set[str] = set()
+    # ToDo: check this type
     author_tokens = set(plugin.get_author_tokens([author]))
     # ToDo: does it need its own workers?
     for book in found_books:
@@ -169,7 +181,7 @@ def __check_found_books(found_books: list[str], author: str, timeout, plugin) ->
 
     return result
 
-def __extract_authors(page) -> list[str]:
+def __extract_authors(page: bytes) -> list[str]:
     result = []
     read_data = page.read().decode(encoding='utf-8')
     parsed_data = fromstring(read_data)
@@ -192,16 +204,16 @@ class MetadataWorker(BaseWorker):
     Specialised worked for exctracting metadata for given id
     WorkerInput.data have to include book's id from wolnelektury.pl and source relevance
     '''
-    def _get_data(self):
+    def _get_data(self) -> Optional[Metadata]:
         return self.get_metadata()
 
     def get_metadata(self) -> Optional[Metadata]:
         '''
         gets metadata from wolnelektury for given book by it's id
         '''
-        wolnelektury_id = self.basic_data[WOLNELEKTURY_ID]
+        wolnelektury_id: str = self.basic_data[WOLNELEKTURY_ID]
         wolnelektury_url: str = get_xml_url(wolnelektury_id)
-        me = None
+        me: Optional[Metadata] = None
         self.log.info(f'Trying to reach book page {wolnelektury_url}')
         with closing(self.browser.open(wolnelektury_url, timeout=self.timeout)) as page:
             self.log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
@@ -227,7 +239,7 @@ class MetadataWorker(BaseWorker):
         self.log.info(f"Getting cover urls for {wolnelektury_id}")
         result: list[str] = []
 
-        user_cover_names = [ config.get_pref('prefered_cover') ]
+        user_cover_names: list[str] = [ config.get_pref('prefered_cover') ]
         user_cover_names.extend(set(COVER_NAMES.keys()) - set(user_cover_names))
 
         max_covers = config.get_pref('max_covers')
@@ -339,6 +351,7 @@ def __get_abstract(parsed_data: etree.Element) -> Optional[str]:
         return None
 
     for paragraph in abstract:
+        # Trying to avoid fragments
         if paragraph.tag != 'akap':
             continue
         if config.get_pref('html_comments'):

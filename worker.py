@@ -3,15 +3,22 @@ Modul aggregating workers code
 '''
 import time
 
-from typing import Optional
+from typing import Optional, Any
 from contextlib import closing
-from threading import Thread
+from threading import Thread, Event
 from collections import namedtuple
-# ToDo: can I get Any type?
 
-from lxml.html import fromstring, tostring, Element
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
+
+from lxml.html import fromstring
 
 # pylint: disable=import-error
+from calibre.utils.browser import Browser
+from calibre.utils.logging import ThreadSafeLog
+from calibre.ebooks.metadata.sources.base import Source
 from calibre_plugins.wolnelektury_source.consts import ID_REGEX
 # pylint: enable=import-error
 
@@ -30,28 +37,28 @@ class BaseWorker(Thread):
         super().__init__()
         self.daemon = True
         self.basic_data: dict = worker_input.data
-        self.browser = worker_input.plugin.browser.clone_browser()
-        self.log = worker_input.log
-        self.timeout = worker_input.timeout
-        self.result_queue = worker_input.result_queue
-        self.plugin = worker_input.plugin
+        self.browser: Browser = worker_input.plugin.browser.clone_browser()
+        self.log: ThreadSafeLog = worker_input.log
+        self.timeout: int = worker_input.timeout
+        self.result_queue: Queue = worker_input.result_queue
+        self.plugin: Source = worker_input.plugin
 
     def run(self):
         try:
-            if (result := self._get_data()):
+            if (result := self._get_data()) is not None:
                 self.result_queue.put(result)
         # ToDo: probably should be more preceise
         except Exception as e:
             self.log.exception('Worker could not finish. Exception')
 
-    def _get_data(self):
+    def _get_data(self) -> Optional[Any]:
         '''
         should return Optional[result_type]
         '''
         raise NotImplementedError('Redefine __get_data() method in child class')
 
     @classmethod
-    def run_workers(cls, workers_input: list[WorkerInput], abort):
+    def run_workers(cls, workers_input: list[WorkerInput], abort: Event):
         '''
         allows running workers with given input
         '''
@@ -85,7 +92,7 @@ class AuthorWorker(BaseWorker):
     '''
     def _get_data(self) -> Optional[list[str]]:
         result = []
-        url = self.basic_data['url']
+        url: str = self.basic_data['url']
         with closing(self.browser.open(url, timeout=self.timeout)) as page:
             result.extend(self._extract_authors_books(page))
 
