@@ -10,7 +10,7 @@ from typing import Optional, Callable
 from contextlib import contextmanager
 from contextlib import closing
 from datetime import datetime
-from enum import StrEnum
+from enum import Enum
 from threading import Event
 
 try:
@@ -63,7 +63,8 @@ def access_data(thing: Callable, log=None):
     finally:
         thing.close()
 
-class SearchCategory(StrEnum):
+# was StrEnum, but it changed req. Python to 3.11
+class SearchCategory(Enum):
     '''
     Enum describing search category for WolneLektury.pl queries
     '''
