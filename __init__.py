@@ -66,11 +66,11 @@ class WolneLekturySource(Source):
     config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
         _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
         _('Please report bugs through the') + \
-        ' <a href="https://www.mobileread.com/forums/showthread.php?t=373972">MobileRead</a>' + \
-        _(' forum or ')+\
-        '<a href="https://github.com/CossackLucas/wolnelektury_source">GitHub</a>' + \
-        _('.') + '<br>' +\
-        _('<b>Warning</b>: ISBN could be pointing to different file format edition of the book')
+        ' <a href="https://www.mobileread.com/forums/showthread.php?t=373972">' + \
+        _('MobileRead') + '</a>' + _(' forum or ') + \
+        '<a href="https://github.com/CossackLucas/wolnelektury_source">' + _('GitHub') + '</a>' + \
+        _('.') + '<br><b>' + _('Warning') + '</b>: ' + \
+        _('ISBN could be pointing to different file format edition of the book.')
     can_get_multiple_covers = True
     prefer_results_with_isbn = False
     options: list[Option] = config.get_options()
