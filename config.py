@@ -7,7 +7,10 @@ from typing import Optional
 # pylint: disable=import-error
 from calibre.utils.config import JSONConfig
 from calibre.ebooks.metadata.sources.base import Option
-from calibre.utils.localization import _
+try:
+    from calibre.utils.localization import _
+except ImportError:
+    from gettext import gettext as _
 
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 # pylint: enable=import-error
@@ -32,7 +35,6 @@ class PluginConfig:
         Option('prefered_cover', 'choices', 'cover',
            _('Prefered cover type'), _('Choose which cover type you prefere'),
            COVER_NAMES),
-        # ToDo: can it be limited to max number?
         Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                       _('Maximal number of covers to download from the site (up to 2)')),
     ]

@@ -14,11 +14,15 @@ except ImportError:
 from calibre.ebooks.metadata.sources.base import Source, Option
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.gui2.metadata.config import ConfigWidget
-from calibre.utils.localization import _
 from calibre.constants import numeric_version
 from calibre.utils.logging import ThreadSafeLog
 # ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
+# needed to lower required calibre version below 6.12.0
+try:
+    from calibre.utils.localization import _
+except ImportError:
+    from gettext import gettext as _
 
 from calibre_plugins.wolnelektury_source.main import check_site_for_books, \
     MetadataWorker, WorkerInput
@@ -45,8 +49,10 @@ class WolneLekturySource(Source):
     author = 'Łukasz Kozak'
     description = _('Download metadata and covers from site wolnelektury.pl')
     version: tuple[int, int, int] = PLUGIN_VERSION
-    # 0.5.1 checked with 6.12.0
-    minimum_calibre_version = (6, 12, 0)
+    # 0.5.2 checked with 6.0.0
+    # lowering it further would require leaving behind type annotations
+    # lowering from 3.9 to 3.7 could be achieved with importing __future__.annotations
+    minimum_calibre_version = (6, 0, 0)
     capabilities = frozenset(['identify', 'cover'])
     touched_fields = frozenset([
         'title',
@@ -63,10 +69,10 @@ class WolneLekturySource(Source):
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
     cached_cover_url_is_reliable = True
-    config_help_message = '<p>'+_('Calibre')+': <b>'+CALIBRE_VERSION+'</b> • ' + \
-        _('Plugin version')+': <b>'+'.'.join([str(x) for x in version])+'</b> • ' + \
-        _('Please report bugs through the') + \
-        ' <a href="https://www.mobileread.com/forums/showthread.php?t=373972">' + \
+    config_help_message = '<p>' + _('Calibre') + ': <b>' + CALIBRE_VERSION + '</b> • ' + \
+        _('Plugin version') + ': <b>' + '.'.join([str(x) for x in version]) + '</b> • ' + \
+        _('Please report bugs through the ') + \
+        '<a href="https://www.mobileread.com/forums/showthread.php?t=373972">' + \
         _('MobileRead') + '</a>' + _(' forum or ') + \
         '<a href="https://github.com/CossackLucas/wolnelektury_source">' + _('GitHub') + '</a>' + \
         _('.') + '<br><b>' + _('Warning') + '</b>: ' + \
@@ -159,7 +165,7 @@ class WolneLekturySource(Source):
                 book_id = self.id_from_url(url)
         return self.cached_identifier_to_cover_url(book_id) if book_id is not None else None
 
-    def id_from_url(self, url: str) -> str:
+    def id_from_url(self, url: str) -> Optional[str]:
         '''
         Parse a URL and return a tuple of the form:
         (identifier_type, identifier_value).

@@ -4,7 +4,10 @@ Source of main data
 import re
 
 # pylint: disable=import-error
-from calibre.utils.localization import _
+try:
+    from calibre.utils.localization import _
+except ImportError:
+    from gettext import gettext as _
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable

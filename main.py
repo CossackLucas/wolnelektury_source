@@ -227,7 +227,6 @@ class MetadataWorker(BaseWorker):
 
         return me
 
-    # ToDo: should get_best_cover come back?
     def __get_cover_urls(self, wolnelektury_id: str) -> list[str]:
         '''
         get cover's urls from wolnelektury.pl. If none are found, result is empty

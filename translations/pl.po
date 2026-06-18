@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-18 06:38+0200\n"
-"PO-Revision-Date: 2026-06-18 06:40+0200\n"
+"POT-Creation-Date: 2026-06-18 12:15+0200\n"
+"PO-Revision-Date: 2026-06-18 12:16+0200\n"
 "Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
 "Language-Team: \n"
 "Language: pl\n"
@@ -21,75 +21,75 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: config.py:30
+#: config.py:33
 msgid "HTML in comments"
 msgstr "HTML w komentarzach"
 
-#: config.py:31
+#: config.py:34
 msgid "Choose if comments' formating should be downloaded as well"
 msgstr "Wybierz, czy komentarze mają także pobrać formatowanie w HTML"
 
-#: config.py:33
+#: config.py:36
 msgid "Prefered cover type"
 msgstr "Preferowany rodzaj okładki"
 
-#: config.py:33
+#: config.py:36
 msgid "Choose which cover type you prefere"
 msgstr "Wybierz preferowany rodzaj okładki"
 
-#: config.py:36
+#: config.py:38
 msgid "Maximal number of covers to download"
 msgstr "Maksymalna liczba okładek do pobrania"
 
-#: config.py:37
+#: config.py:39
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr "Maksymalna liczba okładek do pobrania z portalu (do 2)"
 
-#: consts.py:22
+#: consts.py:25
 msgid "Regular cover"
 msgstr "Zwykła okładka"
 
-#: consts.py:22
+#: consts.py:25
 msgid "Simplified cover"
 msgstr "Uproszczona okładka"
 
-#: __init__.py:46
+#: __init__.py:50
 msgid "Download metadata and covers from site wolnelektury.pl"
 msgstr "Pobieranie metadanych i okładek z portalu wolnelektury.pl"
 
-#: __init__.py:66
+#: __init__.py:72
 msgid "Calibre"
 msgstr "Calibre"
 
-#: __init__.py:67
+#: __init__.py:73
 msgid "Plugin version"
 msgstr "Wersja pluginu"
 
-#: __init__.py:68
-msgid "Please report bugs through the"
-msgstr "Błędy proszę zgłaszać przez forum"
+#: __init__.py:74
+msgid "Please report bugs through the "
+msgstr "Błędy proszę zgłaszać przez forum "
 
-#: __init__.py:70
+#: __init__.py:76
 msgid "MobileRead"
 msgstr "MobileRead"
 
-#: __init__.py:70
+#: __init__.py:76
 msgid " forum or "
 msgstr " lub "
 
-#: __init__.py:71
+#: __init__.py:77
 msgid "GitHub"
 msgstr "GitHubie"
 
-#: __init__.py:72
+#: __init__.py:78
 msgid "."
 msgstr "."
 
-#: __init__.py:72
+#: __init__.py:78
 msgid "Warning"
 msgstr "Ostrzeżenie"
 
-#: __init__.py:73
+#: __init__.py:79
 msgid "ISBN could be pointing to different file format edition of the book."
 msgstr "ISBN może wskazywać na wydanie książki w innym formacie."
 
