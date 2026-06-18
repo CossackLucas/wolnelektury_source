@@ -13,7 +13,6 @@ except ImportError:
 # pylint: disable=import-error
 from calibre.ebooks.metadata.sources.base import Source, Option
 from calibre.ebooks.metadata.book.base import Metadata
-from calibre.gui2.metadata.config import ConfigWidget
 from calibre.utils.logging import ThreadSafeLog
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 # needed to lower required calibre version below 6.12.0
@@ -25,6 +24,7 @@ except ImportError:
 from calibre_plugins.wolnelektury_source.main import check_site_for_books, \
     MetadataWorker, WorkerInput
 from calibre_plugins.wolnelektury_source.config import config
+from calibre_plugins.wolnelektury_source.config import ConfigWidget
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME
 from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID
@@ -92,9 +92,11 @@ class WolneLekturySource(Source):
         '''
         return True
 
-    # ToDo: my own custom widget
-    #def config_widget(self):
-        #return super().config_widget()
+    def config_widget(self) -> ConfigWidget:
+        '''
+        returns widget for editing plugin's config
+        '''
+        return ConfigWidget(self)
 
     def save_settings(self, config_widget: ConfigWidget):
         '''

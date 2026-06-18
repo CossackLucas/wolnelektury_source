@@ -5,8 +5,9 @@ Module with everything config related
 from typing import Optional
 
 # pylint: disable=import-error
+from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
 from calibre.utils.config import JSONConfig
-from calibre.ebooks.metadata.sources.base import Option
+from calibre.ebooks.metadata.sources.base import Source, Option
 try:
     from calibre.utils.localization import _
 except ImportError:
@@ -78,3 +79,12 @@ class PluginConfig:
         return self.__options
 
 config = PluginConfig()
+
+# pylint: disable=too-few-public-methods
+class ConfigWidget(DefaultConfigWidget):
+    '''
+    Custom widget for plugin's config edition
+    '''
+    def __init__(self, plugin: Source):
+        super().__init__(plugin)
+# pylint: enable=too-few-public-methods
