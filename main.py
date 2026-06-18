@@ -40,25 +40,25 @@ from mechanize._response import response_seek_wrapper as Response
 
 MAX_RESULTS = 3
 
-# ToDo: should be looked into
 @contextmanager
-def access_data(thing: Callable, log=None):
+def access_data(browsed_page: Callable[..., Response], log: ThreadSafeLog=None):
     '''
     context manager trying to service all possible issues when parsing data
     '''
     try:
-        yield thing
+        yield browsed_page
     except json.JSONDecodeError as e:
         if log is not None:
-            log.exception(f'Error decoding data:\n{e}')
-    except UnicodeDecodeError as e:
+            log.exception(f'Error decoding JSON data:\n{e}')
+    except UnicodeError as e:
         if log is not None:
-            log.exception(f'Error decoding data:\n{e}')
+            log.exception(f'Error decoding Unicode data:\n{e}')
     except etree.LxmlError as e:
         if log is not None:
-            log.exception(f'Error parsing using lxml:\n{e}')
+            log.exception(f'Error parsing page using lxml:\n{e}')
+    # mechanize related exceptions could not be caught
     finally:
-        thing.close()
+        browsed_page.close()
 
 # was StrEnum, but it changed req. Python to 3.11
 class SearchCategory(Enum):

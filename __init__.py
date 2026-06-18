@@ -10,11 +10,6 @@ try:
 except ImportError:
     from Queue import Queue
 
-try:
-    from urllib.error import HTTPError
-except ImportError:
-    from urllib import HTTPError
-
 # pylint: disable=import-error
 from calibre.ebooks.metadata.sources.base import Source, Option
 from calibre.ebooks.metadata.book.base import Metadata
