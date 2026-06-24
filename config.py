@@ -6,6 +6,7 @@ from typing import Optional
 
 # pylint: disable=import-error
 from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
+from calibre.gui2.metadata.config import FieldsModel
 from calibre.utils.config import JSONConfig
 from calibre.ebooks.metadata.sources.base import Source, Option
 try:
@@ -14,6 +15,9 @@ except ImportError:
     from gettext import gettext as _
 
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
+
+from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, QDoubleSpinBox, \
+    QLineEdit, QCheckBox, QComboBox
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -81,10 +85,40 @@ class PluginConfig:
 config = PluginConfig()
 
 # pylint: disable=too-few-public-methods
-class ConfigWidget(DefaultConfigWidget):
+class ConfigWidget_old(DefaultConfigWidget):
     '''
     Custom widget for plugin's config edition
     '''
     def __init__(self, plugin: Source):
         super().__init__(plugin)
 # pylint: enable=too-few-public-methods
+
+class ConfigWidget_new(QWidget):
+    def __init__(self, plugin: Source):
+        super().__init__()
+        self.plugin = plugin
+
+        self.overl = l = QVBoxLayout(self)
+        if plugin.config_help_message:
+            self.pchm = QLabel(plugin.config_help_message)
+            self.pchm.setWordWrap(True)
+            self.pchm.setOpenExternalLinks(True)
+            l.addWidget(self.pchm, 10)
+
+    def commit(self):
+        self.fields_model.commit()
+        for w in self.widgets:
+            # replace with match?
+            # case Class():
+            if isinstance(w, (QSpinBox, QDoubleSpinBox)):
+                val = w.value()
+            elif isinstance(w, QLineEdit):
+                val = str(w.text())
+            elif isinstance(w, QCheckBox):
+                val = w.isChecked()
+            elif isinstance(w, QComboBox):
+                idx = w.currentIndex()
+                val = str(w.itemData(idx) or '')
+            self.plugin.prefs[w.opt.name] = val
+
+ConfigWidget = ConfigWidget_old
