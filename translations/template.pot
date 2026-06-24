@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-18 12:15+0200\n"
+"POT-Creation-Date: 2026-06-24 17:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,42 +49,42 @@ msgstr ""
 msgid "Simplified cover"
 msgstr ""
 
-#: __init__.py:50
+#: __init__.py:52
 msgid "Download metadata and covers from site wolnelektury.pl"
 msgstr ""
 
-#: __init__.py:72
+#: __init__.py:74
 msgid "Calibre"
 msgstr ""
 
-#: __init__.py:73
+#: __init__.py:75
 msgid "Plugin version"
 msgstr ""
 
-#: __init__.py:74
+#: __init__.py:76
 msgid "Please report bugs through the "
 msgstr ""
 
-#: __init__.py:76
+#: __init__.py:78
 msgid "MobileRead"
 msgstr ""
 
-#: __init__.py:76
+#: __init__.py:78
 msgid " forum or "
 msgstr ""
 
-#: __init__.py:77
+#: __init__.py:79
 msgid "GitHub"
 msgstr ""
 
-#: __init__.py:78
+#: __init__.py:80
 msgid "."
 msgstr ""
 
-#: __init__.py:78
+#: __init__.py:80
 msgid "Warning"
 msgstr ""
 
-#: __init__.py:79
+#: __init__.py:81
 msgid "ISBN could be pointing to different file format edition of the book."
 msgstr ""

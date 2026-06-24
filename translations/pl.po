@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-18 12:15+0200\n"
-"PO-Revision-Date: 2026-06-18 12:16+0200\n"
+"POT-Creation-Date: 2026-06-24 17:46+0200\n"
+"PO-Revision-Date: 2026-06-24 17:56+0200\n"
 "Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
 "Language-Team: \n"
 "Language: pl\n"
@@ -53,43 +53,43 @@ msgstr "Zwykła okładka"
 msgid "Simplified cover"
 msgstr "Uproszczona okładka"
 
-#: __init__.py:50
+#: __init__.py:52
 msgid "Download metadata and covers from site wolnelektury.pl"
 msgstr "Pobieranie metadanych i okładek z portalu wolnelektury.pl"
 
-#: __init__.py:72
+#: __init__.py:74
 msgid "Calibre"
 msgstr "Calibre"
 
-#: __init__.py:73
+#: __init__.py:75
 msgid "Plugin version"
 msgstr "Wersja pluginu"
 
-#: __init__.py:74
+#: __init__.py:76
 msgid "Please report bugs through the "
 msgstr "Błędy proszę zgłaszać przez forum "
 
-#: __init__.py:76
+#: __init__.py:78
 msgid "MobileRead"
 msgstr "MobileRead"
 
-#: __init__.py:76
+#: __init__.py:78
 msgid " forum or "
 msgstr " lub "
 
-#: __init__.py:77
+#: __init__.py:79
 msgid "GitHub"
 msgstr "GitHubie"
 
-#: __init__.py:78
+#: __init__.py:80
 msgid "."
 msgstr "."
 
-#: __init__.py:78
+#: __init__.py:80
 msgid "Warning"
 msgstr "Ostrzeżenie"
 
-#: __init__.py:79
+#: __init__.py:81
 msgid "ISBN could be pointing to different file format edition of the book."
 msgstr "ISBN może wskazywać na wydanie książki w innym formacie."
 

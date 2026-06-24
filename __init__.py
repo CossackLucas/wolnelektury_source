@@ -27,8 +27,10 @@ except ImportError:
 from calibre_plugins.wolnelektury_source.main import check_site_for_books, \
     MetadataWorker, WorkerInput
 from calibre_plugins.wolnelektury_source.config import config
-from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION, PLUGIN_NAME, \
-    WOLNELEKTURY_ID, WOLNELEKTURY_ID_REGEX
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME
+from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID
+from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID_REGEX
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
