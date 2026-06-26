@@ -19,7 +19,7 @@ except ImportError:
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 
 from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, QDoubleSpinBox, \
-    QCheckBox, QComboBox, QListView, QGridLayout, QGroupBox
+    QCheckBox, QComboBox, QListView, QGridLayout, QGroupBox, QListWidget, QAbstractItemView
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -86,16 +86,7 @@ class PluginConfig:
 
 config = PluginConfig()
 
-# pylint: disable=too-few-public-methods
-class ConfigWidget_old(DefaultConfigWidget):
-    '''
-    Custom widget for plugin's config edition
-    '''
-    def __init__(self, plugin: Source):
-        super().__init__(plugin)
-# pylint: enable=too-few-public-methods
-
-class ConfigWidget_new(QWidget):
+class ConfigWidget(QWidget):
     '''
     Personalized config Qt widget
     '''
@@ -112,6 +103,7 @@ class ConfigWidget_new(QWidget):
 
         # ignored fields selection widget
         # ToDo: try to synchronize with calibre translation
+        # ToDo: modifying existing class or initilaised version could be neccesery
         self.gb = QGroupBox(_('Metadata fields to download'), self)
         l.addWidget(self.gb)
         self.gb.l = g = QVBoxLayout(self.gb)
@@ -150,13 +142,19 @@ class ConfigWidget_new(QWidget):
             widget = QCheckBox(opt.label, self)
             widget.setChecked(bool(val))
         elif opt.type == 'choices':
-            widget = QComboBox(self)
-            items = list(opt.choices.items())
-            items.sort(key=lambda k_v: sort_key(k_v[1]))
-            for key, label in items:
-                widget.addItem(label, (key))
-            idx = widget.findData(val)
-            widget.setCurrentIndex(idx)
+            widget = QListWidget(self)
+            # ToDo check docs, set size and pos and check params
+            widget.setDragEnabled(True)
+            widget.setAcceptDrops(True)
+            widget.setDropIndicatorShown(True)
+            widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+            default = COVER_NAMES[opt.default]
+            cover_names_list = [default]
+            list_def = list(COVER_NAMES.values())
+            idx_default = list_def.index(default)
+            list_def.pop(idx_default)
+            cover_names_list.extend(list_def)
+            widget.addItems(cover_names_list)
         widget.opt = opt
         widget.setToolTip(textwrap.fill(opt.desc))
         self.widgets.append(widget)
@@ -184,9 +182,9 @@ class ConfigWidget_new(QWidget):
                 val = w.value()
             elif isinstance(w, QCheckBox):
                 val = w.isChecked()
+            elif isinstance(w, QListWidget):
+                val = w.item(0).text()
             elif isinstance(w, QComboBox):
                 idx = w.currentIndex()
                 val = str(w.itemData(idx) or '')
             self.plugin.prefs[w.opt.name] = val
-
-ConfigWidget = ConfigWidget_new

@@ -98,6 +98,7 @@ class WolneLekturySource(Source):
         '''
         return ConfigWidget(self)
 
+    # ToDo: with widget ready, could be removed
     def save_settings(self, config_widget: ConfigWidget):
         '''
         needed as 'max_covers' already used and if set to 0, calibre uses it and shows no covers
