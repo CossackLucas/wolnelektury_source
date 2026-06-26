@@ -3,11 +3,13 @@ Module with everything config related
 '''
 
 from typing import Optional
+import textwrap
 
 # pylint: disable=import-error
 from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
 from calibre.gui2.metadata.config import FieldsModel
 from calibre.utils.config import JSONConfig
+from calibre.utils.icu import sort_key
 from calibre.ebooks.metadata.sources.base import Source, Option
 try:
     from calibre.utils.localization import _
@@ -17,7 +19,7 @@ except ImportError:
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 
 from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, QDoubleSpinBox, \
-    QLineEdit, QCheckBox, QComboBox
+    QCheckBox, QComboBox, QListView, QGridLayout
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -105,6 +107,51 @@ class ConfigWidget_new(QWidget):
             self.pchm.setOpenExternalLinks(True)
             l.addWidget(self.pchm, 10)
 
+        # Option(s) widgets
+        self.memory: list[QLabel] = []
+        self.widgets: list[QWidget] = []
+        self.l = QGridLayout()
+        # ToDo: check docs and set correctly
+        self.l.setContentsMargins(0, 0, 0, 0)
+        l.addLayout(self.l, 100)
+        for opt in plugin.options:
+            self.create_widgets(opt)
+
+    def create_widgets(self, opt: Option):
+        '''
+        Automating widget creation. Modified standard method
+        '''
+        val = self.plugin.prefs[opt.name]
+        if opt.type == 'number':
+            c = QSpinBox
+            widget = c(self)
+            widget.setRange(1, opt.default)
+            widget.setValue(val)
+        elif opt.type == 'bool':
+            widget = QCheckBox(opt.label, self)
+            widget.setChecked(bool(val))
+        elif opt.type == 'choices':
+            widget = QComboBox(self)
+            items = list(opt.choices.items())
+            items.sort(key=lambda k_v: sort_key(k_v[1]))
+            for key, label in items:
+                widget.addItem(label, (key))
+            idx = widget.findData(val)
+            widget.setCurrentIndex(idx)
+        widget.opt = opt
+        widget.setToolTip(textwrap.fill(opt.desc))
+        self.widgets.append(widget)
+        r = self.l.rowCount()
+        if opt.type == 'bool':
+            self.l.addWidget(widget, r, 0, 1, self.l.columnCount())
+        else:
+            l = QLabel(opt.label)
+            l.setToolTip(widget.toolTip())
+            self.memory.append(l)
+            l.setBuddy(widget)
+            self.l.addWidget(l, r, 0, 1, 1)
+            self.l.addWidget(widget, r, 1, 1, 1)
+
     def commit(self):
         self.fields_model.commit()
         for w in self.widgets:
@@ -112,8 +159,6 @@ class ConfigWidget_new(QWidget):
             # case Class():
             if isinstance(w, (QSpinBox, QDoubleSpinBox)):
                 val = w.value()
-            elif isinstance(w, QLineEdit):
-                val = str(w.text())
             elif isinstance(w, QCheckBox):
                 val = w.isChecked()
             elif isinstance(w, QComboBox):
@@ -121,4 +166,4 @@ class ConfigWidget_new(QWidget):
                 val = str(w.itemData(idx) or '')
             self.plugin.prefs[w.opt.name] = val
 
-ConfigWidget = ConfigWidget_old
+ConfigWidget = ConfigWidget_new
