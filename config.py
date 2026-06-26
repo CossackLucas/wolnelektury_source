@@ -2,12 +2,12 @@
 Module with everything config related
 '''
 
-from typing import Optional
+from typing import Optional, Any
 import textwrap
 
 # pylint: disable=import-error
 from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
-from calibre.gui2.metadata.config import FieldsModel
+from calibre.gui2.metadata.config import FieldsModel, FieldsList
 from calibre.utils.config import JSONConfig
 from calibre.utils.icu import sort_key
 from calibre.ebooks.metadata.sources.base import Source, Option
@@ -19,7 +19,7 @@ except ImportError:
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 
 from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, QDoubleSpinBox, \
-    QCheckBox, QComboBox, QListView, QGridLayout
+    QCheckBox, QComboBox, QListView, QGridLayout, QGroupBox
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -96,6 +96,9 @@ class ConfigWidget_old(DefaultConfigWidget):
 # pylint: enable=too-few-public-methods
 
 class ConfigWidget_new(QWidget):
+    '''
+    Personalized config Qt widget
+    '''
     def __init__(self, plugin: Source):
         super().__init__()
         self.plugin = plugin
@@ -106,6 +109,22 @@ class ConfigWidget_new(QWidget):
             self.pchm.setWordWrap(True)
             self.pchm.setOpenExternalLinks(True)
             l.addWidget(self.pchm, 10)
+
+        # ignored fields selection widget
+        # ToDo: try to synchronize with calibre translation
+        self.gb = QGroupBox(_('Metadata fields to download'), self)
+        l.addWidget(self.gb)
+        self.gb.l = g = QVBoxLayout(self.gb)
+        # ToDo: check docs and set proper size and position
+        g.setContentsMargins(0, 0, 0, 0)
+        self.fields_view = v = FieldsList(self)
+        g.addWidget(v)
+        v.setFlow(QListView.Flow.LeftToRight)
+        v.setWrapping(True)
+        v.setResizeMode(QListView.ResizeMode.Adjust)
+        self.fields_model = FieldsModel(self.plugin)
+        self.fields_model.initialize()
+        v.setModel(self.fields_model)
 
         # Option(s) widgets
         self.memory: list[QLabel] = []
@@ -121,7 +140,7 @@ class ConfigWidget_new(QWidget):
         '''
         Automating widget creation. Modified standard method
         '''
-        val = self.plugin.prefs[opt.name]
+        val: Any = self.plugin.prefs[opt.name]
         if opt.type == 'number':
             c = QSpinBox
             widget = c(self)
@@ -153,10 +172,14 @@ class ConfigWidget_new(QWidget):
             self.l.addWidget(widget, r, 1, 1, 1)
 
     def commit(self):
+        '''
+        save widget config values into preferences
+        '''
         self.fields_model.commit()
         for w in self.widgets:
             # replace with match?
             # case Class():
+            val = None
             if isinstance(w, (QSpinBox, QDoubleSpinBox)):
                 val = w.value()
             elif isinstance(w, QCheckBox):
