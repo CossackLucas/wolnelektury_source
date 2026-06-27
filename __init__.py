@@ -98,19 +98,6 @@ class WolneLekturySource(Source):
         '''
         return ConfigWidget(self)
 
-    # ToDo: with widget ready, could be removed
-    def save_settings(self, config_widget: ConfigWidget):
-        '''
-        needed as 'max_covers' already used and if set to 0, calibre uses it and shows no covers
-        '''
-        def clear_max_covers(value: int) -> int:
-            value = max(value, 1)
-            value = min(value, 2)
-            return value
-
-        super().save_settings(config_widget)
-        self.prefs['max_covers'] = clear_max_covers(self.prefs['max_covers'])
-
     # working methods
     def get_book_url(self, identifiers: dict) -> Optional[tuple]:
         '''
