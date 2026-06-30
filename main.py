@@ -31,7 +31,7 @@ from calibre.utils.browser import Browser
 from calibre.utils.logging import ThreadSafeLog
 
 from calibre_plugins.wolnelektury_source.config import config
-from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, COVER_NAMES, \
+from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, \
     AUTHOR_ID_REGEX, ID_REGEX
 from calibre_plugins.wolnelektury_source.worker import WorkerInput, BaseWorker
 
@@ -234,8 +234,7 @@ class MetadataWorker(BaseWorker):
         self.log.info(f"Getting cover urls for {wolnelektury_id}")
         result: list[str] = []
 
-        user_cover_names: list[str] = [ config.get_pref('prefered_cover') ]
-        user_cover_names.extend(set(COVER_NAMES.keys()) - set(user_cover_names))
+        user_cover_names: list[str] = config.get_pref('prefered_covers')
 
         max_covers = config.get_pref('max_covers')
 

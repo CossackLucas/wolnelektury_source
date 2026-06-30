@@ -6,10 +6,8 @@ from typing import Optional, Any
 import textwrap
 
 # pylint: disable=import-error
-from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
 from calibre.gui2.metadata.config import FieldsModel, FieldsList
 from calibre.utils.config import JSONConfig
-from calibre.utils.icu import sort_key
 from calibre.ebooks.metadata.sources.base import Source, Option
 try:
     from calibre.utils.localization import _
@@ -39,7 +37,7 @@ class PluginConfig:
     __options = [
         Option('html_comments', 'bool', True, _('HTML in comments'),
             _('Choose if comments\' formating should be downloaded as well')),
-        Option('prefered_cover', 'choices', 'cover',
+        Option('prefered_covers', 'choices', 'cover',
            _('Prefered cover type'), _('Choose which cover type you prefere'),
            COVER_NAMES),
         Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
@@ -49,11 +47,11 @@ class PluginConfig:
     def __init__(self):
         self.__config.defaults['Options'] = {
             'html_comments': True,
-            'prefered_cover': 'cover',
+            'prefered_covers': 'cover',
             'max_covers': 2
         }
 
-    def get_pref(self, opt: str) -> Optional[bool|str|int]:
+    def get_pref(self, opt: str) -> Optional[bool|list|int]:
         '''
         Returns value of requested preference
         If it's one of the ignore_fields, return True if the field should be extracted
@@ -148,13 +146,22 @@ class ConfigWidget(QWidget):
             widget.setAcceptDrops(True)
             widget.setDropIndicatorShown(True)
             widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
-            default = COVER_NAMES[opt.default]
-            cover_names_list = [default]
-            list_def = list(COVER_NAMES.values())
-            idx_default = list_def.index(default)
-            list_def.pop(idx_default)
-            cover_names_list.extend(list_def)
-            widget.addItems(cover_names_list)
+
+            # ToDo: should be simplified
+            if len(COVER_NAMES) != len(val):
+                values = set(COVER_NAMES.keys())
+                val = []
+                for item in val:
+                    if item not in values:
+                        continue
+                    val.append(item)
+                diff = values - set(val)
+                for item in diff:
+                    val.append(item)
+            items = []
+            for item in val:
+                items.append(COVER_NAMES[item])
+            widget.addItems(items)
         widget.opt = opt
         widget.setToolTip(textwrap.fill(opt.desc))
         self.widgets.append(widget)
@@ -173,6 +180,12 @@ class ConfigWidget(QWidget):
         '''
         save widget config values into preferences
         '''
+        def find_key(dictionary: dict, val: Any) -> Optional[Any]:
+            for key, value in dictionary.items():
+                if value == val:
+                    return key
+            return None
+
         self.fields_model.commit()
         for w in self.widgets:
             # replace with match?
@@ -183,7 +196,12 @@ class ConfigWidget(QWidget):
             elif isinstance(w, QCheckBox):
                 val = w.isChecked()
             elif isinstance(w, QListWidget):
-                val = w.item(0).text()
+                val = []
+                count = w.count()
+                for i in range(0, count):
+                    item = w.item(i)
+                    if (value := find_key(COVER_NAMES, item.text())) is not None:
+                        val.append(value)
             elif isinstance(w, QComboBox):
                 idx = w.currentIndex()
                 val = str(w.itemData(idx) or '')
