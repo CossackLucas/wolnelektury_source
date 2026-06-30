@@ -2,7 +2,8 @@
 Module with everything config related
 '''
 
-from typing import Optional, Any
+from typing import Any
+from collections import namedtuple
 import textwrap
 
 # pylint: disable=import-error
@@ -16,7 +17,7 @@ except ImportError:
 
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 
-from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, \
+from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, QListWidgetItem, \
     QCheckBox, QListView, QGridLayout, QGroupBox, QListWidget, QAbstractItemView
 # pylint: enable=import-error
 
@@ -28,6 +29,12 @@ except NameError:
     pass
 # pylint: enable=undefined-variable
 
+def _get_defaults(options: list[Option]) -> dict:
+    result = {}
+    for option in options:
+        result[option.name] = option.default
+    return result
+
 class PluginConfig:
     '''
     class used in everything related to plugin's config
@@ -37,25 +44,20 @@ class PluginConfig:
     __options = [
         Option('html_comments', 'bool', True, _('HTML in comments'),
             _('Choose if comments\' formating should be downloaded as well')),
-        Option('prefered_covers', 'choices', 'cover',
-           _('Prefered cover type'), _('Choose which cover type you prefere'),
-           COVER_NAMES),
+        Option('prefered_covers', 'choices', list(COVER_NAMES.keys()),
+           _('Prefered cover type'), _('Choose which cover type you prefere')),
         Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                       _('Maximal number of covers to download from the site (up to 2)')),
     ]
 
     def __init__(self):
-        self.__config.defaults['Options'] = {
-            'html_comments': True,
-            'prefered_covers': 'cover',
-            'max_covers': 2
-        }
+        self.__config.defaults['Options'] = _get_defaults(self.__options)
 
-    def get_pref(self, opt: str) -> Optional[bool|list|int]:
+    def get_pref(self, opt: str) -> Any:
         '''
         Returns value of requested preference
         If it's one of the ignore_fields, return True if the field should be extracted
-        and false if it should be ignored
+        and False if it should be ignored
         Raises:
         ValueError: if value opt could not be found among the included
         '''
@@ -83,6 +85,26 @@ class PluginConfig:
         return self.__options
 
 config = PluginConfig()
+
+# aggregates data for COVER_NAMES dict records
+CoverType = namedtuple('CoverType', ['cover_type', 'description'])
+
+# pylint: disable=too-few-public-methods
+class CoverItem(QListWidgetItem):
+    '''
+    Wrapper class for cover items used in QtListWidget
+    '''
+    def __init__(self, cover: CoverType, widget: QWidget):
+        super().__init__(cover.description, widget, QListWidgetItem.ItemType.UserType)
+        self._value = cover
+
+    @property
+    def value(self) -> CoverType:
+        '''
+        returns CoverType of the item
+        '''
+        return self._value
+# pylint: enable=too-few-public-methods
 
 class ConfigWidget(QWidget):
     '''
@@ -147,21 +169,13 @@ class ConfigWidget(QWidget):
             widget.setDropIndicatorShown(True)
             widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
-            # ToDo: should be simplified
             if len(COVER_NAMES) != len(val):
                 values = set(COVER_NAMES.keys())
-                val = []
-                for item in val:
-                    if item not in values:
-                        continue
-                    val.append(item)
                 diff = values - set(val)
                 for item in diff:
                     val.append(item)
-            items = []
             for item in val:
-                items.append(COVER_NAMES[item])
-            widget.addItems(items)
+                widget.addItem(CoverItem(CoverType(item, COVER_NAMES[item]), widget))
         widget.opt = opt
         widget.setToolTip(textwrap.fill(opt.desc))
         self.widgets.append(widget)
@@ -182,12 +196,6 @@ class ConfigWidget(QWidget):
         Raises:
         TypeError: if widget type is not supported
         '''
-        def find_key(dictionary: dict, val: Any) -> Optional[Any]:
-            for key, value in dictionary.items():
-                if value == val:
-                    return key
-            return None
-
         self.fields_model.commit()
         for w in self.widgets:
             match w:
@@ -199,9 +207,8 @@ class ConfigWidget(QWidget):
                     val = []
                     count = w.count()
                     for i in range(0, count):
-                        item = w.item(i)
-                        if (value := find_key(COVER_NAMES, item.text())) is not None:
-                            val.append(value)
+                        item = w.item(i).value
+                        val.append(item.cover_type)
                 case _:
-                    raise TypeError(f'Qt widget type {type(w)} not supported')
+                    raise TypeError(f'Qt widget type {type(w)} is not supported')
             self.plugin.prefs[w.opt.name] = val
