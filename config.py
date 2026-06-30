@@ -16,8 +16,8 @@ except ImportError:
 
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 
-from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, QDoubleSpinBox, \
-    QCheckBox, QComboBox, QListView, QGridLayout, QGroupBox, QListWidget, QAbstractItemView
+from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, \
+    QCheckBox, QListView, QGridLayout, QGroupBox, QListWidget, QAbstractItemView
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -179,6 +179,8 @@ class ConfigWidget(QWidget):
     def commit(self):
         '''
         save widget config values into preferences
+        Raises:
+        TypeError: if widget type is not supported
         '''
         def find_key(dictionary: dict, val: Any) -> Optional[Any]:
             for key, value in dictionary.items():
@@ -188,21 +190,18 @@ class ConfigWidget(QWidget):
 
         self.fields_model.commit()
         for w in self.widgets:
-            # replace with match?
-            # case Class():
-            val = None
-            if isinstance(w, (QSpinBox, QDoubleSpinBox)):
-                val = w.value()
-            elif isinstance(w, QCheckBox):
-                val = w.isChecked()
-            elif isinstance(w, QListWidget):
-                val = []
-                count = w.count()
-                for i in range(0, count):
-                    item = w.item(i)
-                    if (value := find_key(COVER_NAMES, item.text())) is not None:
-                        val.append(value)
-            elif isinstance(w, QComboBox):
-                idx = w.currentIndex()
-                val = str(w.itemData(idx) or '')
+            match w:
+                case QSpinBox():
+                    val = w.value()
+                case QCheckBox():
+                    val = w.isChecked()
+                case QListWidget():
+                    val = []
+                    count = w.count()
+                    for i in range(0, count):
+                        item = w.item(i)
+                        if (value := find_key(COVER_NAMES, item.text())) is not None:
+                            val.append(value)
+                case _:
+                    raise TypeError(f'Qt widget type {type(w)} not supported')
             self.plugin.prefs[w.opt.name] = val
