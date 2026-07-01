@@ -14,7 +14,6 @@ except ImportError:
 from calibre.ebooks.metadata.sources.base import Source, Option
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.gui2.metadata.config import ConfigWidget
-from calibre.constants import numeric_version
 from calibre.utils.logging import ThreadSafeLog
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 # needed to lower required calibre version below 6.12.0
@@ -30,17 +29,9 @@ from calibre_plugins.wolnelektury_source.consts import PLUGIN_VERSION
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME
 from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID
 from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID_REGEX
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_DESCRIPTION
+from calibre_plugins.wolnelektury_source.consts import CONFIG_HELP_MESSAGE
 # pylint: enable=import-error
-
-# pylint: disable=undefined-variable
-# required to run tests
-try:
-    load_translations()
-except NameError:
-    pass
-# pylint: enable=undefined-variable
-
-CALIBRE_VERSION = ".".join([str(x) for x in numeric_version])
 
 class WolneLekturySource(Source):
     '''
@@ -50,7 +41,7 @@ class WolneLekturySource(Source):
     # Because of it, it can't identify the plugin
     name = PLUGIN_NAME
     author = 'Łukasz Kozak'
-    description = _('Download metadata and covers from site wolnelektury.pl')
+    description = PLUGIN_DESCRIPTION
     version = PLUGIN_VERSION
     # 1.0.0 checked with 6.0.0
     # lowering it further would require leaving behind type annotations
@@ -72,14 +63,7 @@ class WolneLekturySource(Source):
     supports_gzip_transfer_encoding = False
     ignore_ssl_errors = False
     cached_cover_url_is_reliable = True
-    config_help_message = '<p>' + _('Calibre') + ': <b>' + CALIBRE_VERSION + '</b> • ' + \
-        _('Plugin version') + ': <b>' + '.'.join([str(x) for x in version]) + '</b> • ' + \
-        _('Please report bugs through the ') + \
-        '<a href="https://www.mobileread.com/forums/showthread.php?t=373972">' + \
-        _('MobileRead') + '</a>' + _(' forum or ') + \
-        '<a href="https://github.com/CossackLucas/wolnelektury_source">' + _('GitHub') + '</a>' + \
-        _('.') + '<br><b>' + _('Warning') + '</b>: ' + \
-        _('ISBN could be pointing to different file format edition of the book.')
+    config_help_message = CONFIG_HELP_MESSAGE
     can_get_multiple_covers = True
     prefer_results_with_isbn = False
     options = config.get_options()
