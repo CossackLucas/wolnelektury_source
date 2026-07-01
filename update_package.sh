@@ -5,15 +5,6 @@ if [[ $EUID == 0 ]]; then
   exit 2
 fi
 
-# running tests
-calibre-debug -e __init__.py
-if [[ $? -eq 0 ]]; then
-    echo 'Tests passed'
-else
-    echo 'Tests failed'
-    exit 1
-fi
-
 plugin_dir=~/.config/calibre/plugins
 build_dir=.build/wolnelektury/
 
@@ -50,6 +41,15 @@ fi
 # Making sure, that package is created from the correct, tagged version
 if [[ "v$version" != $(git describe --exact-match --tags) ]]; then
     echo "Checkout correctly tagged version (v$version)"
+    exit 1
+fi
+
+# running tests
+calibre-debug -e __init__.py
+if [[ $? -eq 0 ]]; then
+    echo 'Tests passed'
+else
+    echo 'Tests failed'
     exit 1
 fi
 
