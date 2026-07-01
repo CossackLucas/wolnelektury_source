@@ -29,12 +29,6 @@ except NameError:
     pass
 # pylint: enable=undefined-variable
 
-def _get_defaults(options: list[Option]) -> dict:
-    result = {}
-    for option in options:
-        result[option.name] = option.default
-    return result
-
 class PluginConfig:
     '''
     class used in everything related to plugin's config
@@ -50,8 +44,6 @@ class PluginConfig:
             Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                 _('Maximal number of covers to download from the site (up to 2)')),
     ]
-
-        self.__config.defaults['Options'] = _get_defaults(self.__options)
 
     def get_prefs(self) -> dict:
         '''
@@ -96,33 +88,37 @@ class ConfigWidget(DefaultConfigWidget):
         Automating widget creation. Modified standard method
         '''
         val: Any = self.plugin.prefs[opt.name]
-        if opt.type == 'number':
-            widget = QSpinBox(self)
-            widget.setRange(1, opt.default)
-            widget.setValue(val)
-        elif opt.type == 'bool':
-            widget = QCheckBox(opt.label, self)
-            widget.setChecked(bool(val))
-        elif opt.type == 'list':
-            widget = QListWidget(self)
-            widget.setDragEnabled(True)
-            widget.setAcceptDrops(False)
-            widget.setDropIndicatorShown(True)
-            widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
-            max_width = 0
-            for value in COVER_NAMES.values():
-                if (width := len(value)) > max_width:
-                    max_width = width
-            widget.setMaximumSize(10*max_width, 25*len(COVER_NAMES))
+        match opt.type:
+            case 'number':
+                widget = QSpinBox(self)
+                widget.setRange(1, opt.default)
+                widget.setValue(val)
+            case 'bool':
+                widget = QCheckBox(opt.label, self)
+                widget.setChecked(bool(val))
+            case 'list':
+                widget = QListWidget(self)
+                widget.setDragEnabled(True)
+                widget.setAcceptDrops(False)
+                widget.setDropIndicatorShown(True)
+                widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+                max_width = 0
+                for value in COVER_NAMES.values():
+                    if (width := len(value)) > max_width:
+                        max_width = width
+                widget.setMaximumSize(10*max_width, 25*len(COVER_NAMES))
 
-            # prepared for new options
-            if len(COVER_NAMES) != len(val):
-                values = set(COVER_NAMES.keys())
-                diff = values - set(val)
-                for item in diff:
-                    val.append(item)
-            for item in val:
-                widget.addItem(CoverItem(CoverType(item, COVER_NAMES[item]), widget))
+                # prepared for new options
+                if len(COVER_NAMES) != len(val):
+                    values = set(COVER_NAMES.keys())
+                    diff = values - set(val)
+                    for item in diff:
+                        val.append(item)
+                for item in val:
+                    widget.addItem(CoverItem(CoverType(item, COVER_NAMES[item]), widget))
+            case _:
+                raise ValueError(f'{opt.type} not correct option type!')
+
         widget.opt = opt
         widget.setToolTip(textwrap.fill(opt.desc))
         self.widgets.append(widget)
