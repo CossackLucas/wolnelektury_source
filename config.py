@@ -15,7 +15,7 @@ try:
 except ImportError:
     from gettext import gettext as _
 
-from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
+from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME
 
 from qt.core import QWidget, QLabel, QSpinBox, QListWidgetItem, QCheckBox, QListWidget, \
     QAbstractItemView
@@ -29,6 +29,11 @@ except NameError:
     pass
 # pylint: enable=undefined-variable
 
+COVER_NAMES = {
+    'cover': _('Regular cover'),
+    'simple_cover': _('Simplified cover'),
+}
+
 class PluginConfig:
     '''
     class used in everything related to plugin's config
@@ -41,7 +46,7 @@ class PluginConfig:
                 _('Choose if comments\' formating should be downloaded as well')),
             Option('prefered_covers', 'list', list(COVER_NAMES.keys()),
                 _('Cover type preferences'), _('Order cover types preferences by draging them')),
-            Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
+            Option('max_covers', 'number', len(COVER_NAMES), _('Maximal number of covers to download'),
                 _('Maximal number of covers to download from the site (up to 2)')),
     ]
 
@@ -109,9 +114,15 @@ class ConfigWidget(DefaultConfigWidget):
                 widget.setMaximumSize(10*max_width, 25*len(COVER_NAMES))
 
                 # prepared for new options
-                if len(COVER_NAMES) != len(val):
-                    values = set(COVER_NAMES.keys())
-                    diff = values - set(val)
+                keys = set(COVER_NAMES.keys())
+                temp = []
+                for item in val:
+                    if item not in keys:
+                        temp.append(item)
+                for item in temp:
+                    val.remove(item)
+                if len(keys) != len(val):
+                    diff = keys - set(val)
                     for item in diff:
                         val.append(item)
                 for item in val:

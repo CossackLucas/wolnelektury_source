@@ -23,11 +23,6 @@ PLUGIN_VERSION = (1, 0, 0)
 PLUGIN_NAME = 'WolneLektury'
 WOLNELEKTURY_ID = 'wolnelektury'
 
-COVER_NAMES = {
-    'cover': _('Regular cover'),
-    'simple_cover': _('Simplified cover')
-}
-
 ID_REGEX = re.compile(r'/katalog/lektura/([a-z\-]+)/')
 AUTHOR_ID_REGEX = re.compile(r'/katalog/autor/([a-z\-]+)/')
 WOLNELEKTURY_ID_REGEX = (
