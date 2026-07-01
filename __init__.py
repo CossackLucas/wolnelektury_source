@@ -46,11 +46,13 @@ class WolneLekturySource(Source):
     '''
     source plugin definition
     '''
-    name: str = PLUGIN_NAME
+    # Fields used by importer can't have type annotations!
+    # Because of it, it can't identify the plugin
+    name = PLUGIN_NAME
     author = 'Łukasz Kozak'
     description = _('Download metadata and covers from site wolnelektury.pl')
-    version: tuple[int, int, int] = PLUGIN_VERSION
-    # 0.5.2 checked with 6.0.0
+    version = PLUGIN_VERSION
+    # 1.0.0 checked with 6.0.0
     # lowering it further would require leaving behind type annotations
     # lowering from 3.9 to 3.7 could be achieved with importing __future__.annotations
     minimum_calibre_version = (6, 0, 0)
@@ -80,7 +82,7 @@ class WolneLekturySource(Source):
         _('ISBN could be pointing to different file format edition of the book.')
     can_get_multiple_covers = True
     prefer_results_with_isbn = False
-    options: list[Option] = config.get_options()
+    options = config.get_options()
 
     @property
     def prefs(self) -> dict:
