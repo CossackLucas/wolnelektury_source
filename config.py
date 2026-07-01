@@ -39,19 +39,20 @@ class PluginConfig:
     '''
     class used in everything related to plugin's config
     '''
-    # Localization is ~/.config/calibre/metadata_sources/WolneLektury.json
-    __config = JSONConfig(f'metadata_sources/{PLUGIN_NAME}.json')
-    __options = [
-        Option('html_comments', 'bool', True, _('HTML in comments'),
-            _('Choose if comments\' formating should be downloaded as well')),
-        Option('prefered_covers', 'choices', list(COVER_NAMES.keys()),
-           _('Prefered cover type'), _('Choose which cover type you prefere')),
-        Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
-                      _('Maximal number of covers to download from the site (up to 2)')),
+    def __init__(self):
+        # Localization is ~/.config/calibre/metadata_sources/WolneLektury.json
+        self.__config = JSONConfig(f'metadata_sources/{PLUGIN_NAME}.json')
+        self.__options = [
+            Option('html_comments', 'bool', True, _('HTML in comments'),
+                _('Choose if comments\' formating should be downloaded as well')),
+            Option('prefered_covers', 'choices', list(COVER_NAMES.keys()),
+                _('Prefered cover type'), _('Choose which cover type you prefere')),
+            Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
+                _('Maximal number of covers to download from the site (up to 2)')),
     ]
 
-    def __init__(self):
         self.__config.defaults['Options'] = _get_defaults(self.__options)
+        self.__ignoreable_fields = set(('publisher', 'pubdate', 'comments'))
 
     def get_pref(self, opt: str) -> Any:
         '''
@@ -61,7 +62,7 @@ class PluginConfig:
         Raises:
         ValueError: if value opt could not be found among the included
         '''
-        if opt in set(('publisher', 'pubdate', 'comments')):
+        if opt in self.__ignoreable_fields:
             if (ignore_fields := self.__config.get('ignore_fields')) is not None and \
                 opt in ignore_fields:
                 return False
@@ -165,9 +166,14 @@ class ConfigWidget(QWidget):
             widget = QListWidget(self)
             # ToDo check docs, set size and pos and check params
             widget.setDragEnabled(True)
-            widget.setAcceptDrops(True)
+            widget.setAcceptDrops(False)
             widget.setDropIndicatorShown(True)
             widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+            max_width = 0
+            for value in COVER_NAMES.values():
+                if (width := len(value)) > max_width:
+                    max_width = width
+            widget.setMaximumSize(10*max_width, 25*len(COVER_NAMES))
 
             if len(COVER_NAMES) != len(val):
                 values = set(COVER_NAMES.keys())
