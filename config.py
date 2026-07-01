@@ -7,9 +7,9 @@ from collections import namedtuple
 import textwrap
 
 # pylint: disable=import-error
-from calibre.gui2.metadata.config import FieldsModel, FieldsList
+from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
 from calibre.utils.config import JSONConfig
-from calibre.ebooks.metadata.sources.base import Source, Option
+from calibre.ebooks.metadata.sources.base import Option
 try:
     from calibre.utils.localization import _
 except ImportError:
@@ -17,8 +17,8 @@ except ImportError:
 
 from calibre_plugins.wolnelektury_source.consts import PLUGIN_NAME, COVER_NAMES
 
-from qt.core import QWidget, QLabel, QVBoxLayout, QSpinBox, QListWidgetItem, \
-    QCheckBox, QListView, QGridLayout, QGroupBox, QListWidget, QAbstractItemView
+from qt.core import QWidget, QLabel, QSpinBox, QListWidgetItem, QCheckBox, QListWidget, \
+    QAbstractItemView
 # pylint: enable=import-error
 
 # pylint: disable=undefined-variable
@@ -87,7 +87,7 @@ class PluginConfig:
 
 config = PluginConfig()
 
-# aggregates data for COVER_NAMES dict records
+# aggregates data from COVER_NAMES dict records
 CoverType = namedtuple('CoverType', ['cover_type', 'description'])
 
 # pylint: disable=too-few-public-methods
@@ -107,56 +107,17 @@ class CoverItem(QListWidgetItem):
         return self._value
 # pylint: enable=too-few-public-methods
 
-class ConfigWidget(QWidget):
+class ConfigWidget(DefaultConfigWidget):
     '''
     Personalized config Qt widget
     '''
-    def __init__(self, plugin: Source):
-        super().__init__()
-        self.plugin = plugin
-
-        self.overl = l = QVBoxLayout(self)
-        if plugin.config_help_message:
-            self.pchm = QLabel(plugin.config_help_message)
-            self.pchm.setWordWrap(True)
-            self.pchm.setOpenExternalLinks(True)
-            l.addWidget(self.pchm, 10)
-
-        # ignored fields selection widget
-        # ToDo: try to synchronize with calibre translation
-        # ToDo: modifying existing class or initilaised version could be neccesery
-        self.gb = QGroupBox(_('Metadata fields to download'), self)
-        l.addWidget(self.gb)
-        self.gb.l = g = QVBoxLayout(self.gb)
-        # ToDo: check docs and set proper size and position
-        g.setContentsMargins(0, 0, 0, 0)
-        self.fields_view = v = FieldsList(self)
-        g.addWidget(v)
-        v.setFlow(QListView.Flow.LeftToRight)
-        v.setWrapping(True)
-        v.setResizeMode(QListView.ResizeMode.Adjust)
-        self.fields_model = FieldsModel(self.plugin)
-        self.fields_model.initialize()
-        v.setModel(self.fields_model)
-
-        # Option(s) widgets
-        self.memory: list[QLabel] = []
-        self.widgets: list[QWidget] = []
-        self.l = QGridLayout()
-        # ToDo: check docs and set correctly
-        self.l.setContentsMargins(0, 0, 0, 0)
-        l.addLayout(self.l, 100)
-        for opt in plugin.options:
-            self.create_widgets(opt)
-
     def create_widgets(self, opt: Option):
         '''
         Automating widget creation. Modified standard method
         '''
         val: Any = self.plugin.prefs[opt.name]
         if opt.type == 'number':
-            c = QSpinBox
-            widget = c(self)
+            widget = QSpinBox(self)
             widget.setRange(1, opt.default)
             widget.setValue(val)
         elif opt.type == 'bool':
@@ -164,7 +125,6 @@ class ConfigWidget(QWidget):
             widget.setChecked(bool(val))
         elif opt.type == 'choices':
             widget = QListWidget(self)
-            # ToDo check docs, set size and pos and check params
             widget.setDragEnabled(True)
             widget.setAcceptDrops(False)
             widget.setDropIndicatorShown(True)
@@ -175,6 +135,7 @@ class ConfigWidget(QWidget):
                     max_width = width
             widget.setMaximumSize(10*max_width, 25*len(COVER_NAMES))
 
+            # prepared for new options
             if len(COVER_NAMES) != len(val):
                 values = set(COVER_NAMES.keys())
                 diff = values - set(val)
