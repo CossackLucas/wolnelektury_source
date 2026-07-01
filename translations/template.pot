@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-01 19:58+0200\n"
+"POT-Creation-Date: 2026-07-01 20:08+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,77 +25,71 @@ msgstr ""
 msgid "Simplified cover"
 msgstr ""
 
-#: config.py:45
-msgid "HTML in comments"
+#: config.py:35
+msgid "Legacy cover"
 msgstr ""
 
 #: config.py:46
+msgid "HTML in comments"
+msgstr ""
+
+#: config.py:47
 msgid "Choose if comments' formating should be downloaded as well"
 msgstr ""
 
-#: config.py:48
+#: config.py:49
 msgid "Cover type preferences"
 msgstr ""
 
-#: config.py:48
+#: config.py:49
 msgid "Order cover types preferences by draging them"
 msgstr ""
 
-#: config.py:50
+#: config.py:51
 msgid "Maximal number of covers to download"
 msgstr ""
 
-#: config.py:51
-msgid "Maximal number of covers to download from the site (up to 2)"
-msgstr ""
-
-#: consts.py:26
-msgid "Regular cover"
-msgstr ""
-
-#: consts.py:26
-msgid "Simplified cover"
-
+#: config.py:52
 #, python-brace-format
 msgid "Maximal number of covers to download from the site (up to {0:d})"
 msgstr ""
 
-#: consts.py:38
+#: consts.py:36
 msgid "Download metadata and covers from site wolnelektury.pl"
 msgstr ""
 
-#: consts.py:40
+#: consts.py:38
 msgid "Calibre"
 msgstr ""
 
-#: consts.py:42
+#: consts.py:40
 msgid "Plugin version"
 msgstr ""
 
-#: consts.py:44
+#: consts.py:42
 msgid "Please report bugs through the "
 msgstr ""
 
-#: consts.py:46
+#: consts.py:44
 msgid "MobileRead"
 msgstr ""
 
-#: consts.py:46
+#: consts.py:44
 msgid " forum or "
 msgstr ""
 
-#: consts.py:47
+#: consts.py:45
 msgid "GitHub"
 msgstr ""
 
-#: consts.py:48
+#: consts.py:46
 msgid "."
 msgstr ""
 
-#: consts.py:48
+#: consts.py:46
 msgid "Warning"
 msgstr ""
 
-#: consts.py:49
+#: consts.py:47
 msgid "ISBN could be pointing to different file format edition of the book."
 msgstr ""

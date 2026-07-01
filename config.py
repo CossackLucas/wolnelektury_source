@@ -10,6 +10,8 @@ import textwrap
 from calibre.gui2.metadata.config import ConfigWidget as DefaultConfigWidget
 from calibre.utils.config import JSONConfig
 from calibre.ebooks.metadata.sources.base import Option
+
+# needed to lower required calibre version below 6.12.0
 try:
     from calibre.utils.localization import _
 except ImportError:

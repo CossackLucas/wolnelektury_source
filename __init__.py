@@ -14,12 +14,6 @@ except ImportError:
 from calibre.ebooks.metadata.sources.base import Source, Option
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.utils.logging import ThreadSafeLog
-from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
-# needed to lower required calibre version below 6.12.0
-try:
-    from calibre.utils.localization import _
-except ImportError:
-    from gettext import gettext as _
 
 from calibre_plugins.wolnelektury_source.main import check_site_for_books, \
     MetadataWorker, WorkerInput

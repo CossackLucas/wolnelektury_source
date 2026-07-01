@@ -5,6 +5,8 @@ import re
 
 # pylint: disable=import-error
 from calibre.constants import numeric_version
+
+# needed to lower required calibre version below 6.12.0
 try:
     from calibre.utils.localization import _
 except ImportError:

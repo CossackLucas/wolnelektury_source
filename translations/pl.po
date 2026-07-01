@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-01 19:58+0200\n"
-"PO-Revision-Date: 2026-07-01 20:00+0200\n"
+"POT-Creation-Date: 2026-07-01 20:08+0200\n"
+"PO-Revision-Date: 2026-07-01 20:11+0200\n"
 "Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
 "Language-Team: \n"
 "Language: pl\n"
@@ -53,59 +53,47 @@ msgstr "Uszereguj preferencje typu okładek przez przeciągniecie ich"
 msgid "Maximal number of covers to download"
 msgstr "Maksymalna liczba okładek do pobrania"
 
-#: config.py:51
-msgid "Maximal number of covers to download from the site (up to 2)"
-msgstr "Maksymalna liczba okładek do pobrania z portalu (do 2)"
-
-#: consts.py:26
-msgid "Regular cover"
-msgstr "Zwykła okładka"
-
-#: consts.py:26
-msgid "Simplified cover"
-msgstr "Uproszczona okładka"
-
 #: config.py:52
 #, python-brace-format
 msgid "Maximal number of covers to download from the site (up to {0:d})"
 msgstr "Maksymalna liczba okładek do pobrania z portalu (do {0:d})"
 
-#: consts.py:38
+#: consts.py:36
 msgid "Download metadata and covers from site wolnelektury.pl"
 msgstr "Pobieranie metadanych i okładek z portalu wolnelektury.pl"
 
-#: consts.py:40
+#: consts.py:38
 msgid "Calibre"
 msgstr "Calibre"
 
-#: consts.py:42
+#: consts.py:40
 msgid "Plugin version"
 msgstr "Wersja pluginu"
 
-#: consts.py:44
+#: consts.py:42
 msgid "Please report bugs through the "
 msgstr "Błędy proszę zgłaszać przez forum "
 
-#: consts.py:46
+#: consts.py:44
 msgid "MobileRead"
 msgstr "MobileRead"
 
-#: consts.py:46
+#: consts.py:44
 msgid " forum or "
 msgstr " lub "
 
-#: consts.py:47
+#: consts.py:45
 msgid "GitHub"
 msgstr "GitHubie"
 
-#: consts.py:48
+#: consts.py:46
 msgid "."
 msgstr "."
 
-#: consts.py:48
+#: consts.py:46
 msgid "Warning"
 msgstr "Ostrzeżenie"
 
-#: consts.py:49
+#: consts.py:47
 msgid "ISBN could be pointing to different file format edition of the book."
 msgstr "ISBN może wskazywać na wydanie książki w innym formacie."
