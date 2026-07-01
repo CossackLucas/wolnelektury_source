@@ -46,7 +46,7 @@ class PluginConfig:
             Option('html_comments', 'bool', True, _('HTML in comments'),
                 _('Choose if comments\' formating should be downloaded as well')),
             Option('prefered_covers', 'choices', list(COVER_NAMES.keys()),
-                _('Prefered cover type'), _('Choose which cover type you prefere')),
+                _('Cover type preferences'), _('Order cover types preferences by draging them')),
             Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                 _('Maximal number of covers to download from the site (up to 2)')),
     ]

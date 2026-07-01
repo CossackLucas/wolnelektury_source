@@ -17,27 +17,27 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: config.py:33
+#: config.py:46
 msgid "HTML in comments"
 msgstr ""
 
-#: config.py:34
+#: config.py:47
 msgid "Choose if comments' formating should be downloaded as well"
 msgstr ""
 
-#: config.py:36
-msgid "Prefered cover type"
+#: config.py:49
+msgid "Cover type preferences"
 msgstr ""
 
-#: config.py:36
-msgid "Choose which cover type you prefere"
+#: config.py:49
+msgid "Order cover types preferences by draging them"
 msgstr ""
 
-#: config.py:38
+#: config.py:50
 msgid "Maximal number of covers to download"
 msgstr ""
 
-#: config.py:39
+#: config.py:51
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr ""
 
@@ -45,7 +45,11 @@ msgstr ""
 msgid "Regular cover"
 msgstr ""
 
+<<<<<<< HEAD
 #: consts.py:26
+=======
+#: consts.py:27
+>>>>>>> 3b08081 (Translation update related to config widget changes)
 msgid "Simplified cover"
 msgstr ""
 

@@ -8,6 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2026-07-01 19:58+0200\n"
 "PO-Revision-Date: 2026-07-01 20:00+0200\n"
 "Last-Translator: Łukasz Kozak <lakis.kozak@gmail.com>\n"
@@ -21,27 +22,27 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: config.py:33
+#: config.py:46
 msgid "HTML in comments"
 msgstr "HTML w komentarzach"
 
-#: config.py:34
+#: config.py:47
 msgid "Choose if comments' formating should be downloaded as well"
 msgstr "Wybierz, czy komentarze mają także pobrać formatowanie w HTML"
 
-#: config.py:36
-msgid "Prefered cover type"
-msgstr "Preferowany rodzaj okładki"
+#: config.py:49
+msgid "Cover type preferences"
+msgstr "Preferencje rodzajów okładki"
 
-#: config.py:36
-msgid "Choose which cover type you prefere"
-msgstr "Wybierz preferowany rodzaj okładki"
+#: config.py:49
+msgid "Order cover types preferences by draging them"
+msgstr "Uszereguj preferencje typu okładek przez przeciągniecie ich"
 
-#: config.py:38
+#: config.py:50
 msgid "Maximal number of covers to download"
 msgstr "Maksymalna liczba okładek do pobrania"
 
-#: config.py:39
+#: config.py:51
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr "Maksymalna liczba okładek do pobrania z portalu (do 2)"
 
@@ -49,7 +50,11 @@ msgstr "Maksymalna liczba okładek do pobrania z portalu (do 2)"
 msgid "Regular cover"
 msgstr "Zwykła okładka"
 
+<<<<<<< HEAD
 #: consts.py:26
+=======
+#: consts.py:27
+>>>>>>> 3b08081 (Translation update related to config widget changes)
 msgid "Simplified cover"
 msgstr "Uproszczona okładka"
 
@@ -92,6 +97,9 @@ msgstr "Ostrzeżenie"
 #: consts.py:49
 msgid "ISBN could be pointing to different file format edition of the book."
 msgstr "ISBN może wskazywać na wydanie książki w innym formacie."
+
+#~ msgid "Prefered cover type"
+#~ msgstr "Preferowany rodzaj okładki"
 
 #, fuzzy
 #~| msgid "Please report bugs through the <a href=\"https://www.mobileread.com/\">MobileRead</a> forum.<br>"
