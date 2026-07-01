@@ -30,7 +30,6 @@ from calibre.ebooks.metadata.sources.base import Source
 from calibre.utils.browser import Browser
 from calibre.utils.logging import ThreadSafeLog
 
-from calibre_plugins.wolnelektury_source.config import config
 from calibre_plugins.wolnelektury_source.consts import WOLNELEKTURY_ID, \
     AUTHOR_ID_REGEX, ID_REGEX
 from calibre_plugins.wolnelektury_source.worker import WorkerInput, BaseWorker
@@ -215,7 +214,7 @@ class MetadataWorker(BaseWorker):
             self.log.info(f'Page \'{wolnelektury_url}\' accessed and parsed')
             read_data = page.read().decode(encoding='utf-8')
             parsed_data = etree.fromstring(read_data)
-            me = extract_metadata_xml(parsed_data)
+            me = extract_metadata_xml(parsed_data, self.plugin.prefs)
             me.set_identifier(WOLNELEKTURY_ID, wolnelektury_id)
             me.source_relevance = self.basic_data['relevance']
 
@@ -234,9 +233,9 @@ class MetadataWorker(BaseWorker):
         self.log.info(f"Getting cover urls for {wolnelektury_id}")
         result: list[str] = []
 
-        user_cover_names: list[str] = config.get_pref('prefered_covers')
+        user_cover_names: list[str] = self.plugin.prefs['prefered_covers']
 
-        max_covers = config.get_pref('max_covers')
+        max_covers = self.plugin.prefs['max_covers']
 
         with access_data(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
             self.log.info("Parsing data for covers")
@@ -332,11 +331,12 @@ def __get_authors_url(wolnelektury_id: str) -> str:
     '''
     return f'https://wolnelektury.pl/katalog/autor/{wolnelektury_id}/'
 
-def extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
+def extract_metadata_xml(parsed_data: etree.Element, prefs: dict) -> Metadata:
     '''
     Extracts metadata from lxml etree
     Assumes data is from wolnelektury.pl
     '''
+    ignore_fields = prefs['ignore_fields']
     me = Metadata('', '')
 
     if (book_title := __get_data_from_xml(parsed_data, 'title')) is not None:
@@ -348,17 +348,18 @@ def extract_metadata_xml(parsed_data: etree.Element) -> Metadata:
     if (book_lang := __get_data_from_xml(parsed_data, 'language')) is not None:
         me.language = book_lang
 
-    if config.get_pref('pubdate') and \
+    if 'pubdate' not in ignore_fields and \
         (book_date := __get_date_from_parsed_xml(parsed_data,'date')):
         me.pubdate = book_date
 
-    if config.get_pref('comments') and (book_abstract := __get_abstract(parsed_data)):
+    if 'comments' not in ignore_fields and \
+        (book_abstract := __get_abstract(parsed_data, prefs['html_comments'])):
         me.comments = book_abstract
 
     if (book_isbn := __get_isbn_from_parsed_xml(parsed_data)) is not None:
         me.isbn = book_isbn
 
-    if config.get_pref('publisher'):
+    if 'publisher' not in ignore_fields:
         me.publisher = 'Fundacja Nowoczesna Polska'
 
     return me
@@ -396,7 +397,7 @@ def __standardize_author(reversed_name: str) -> str:
     elements = reversed_name.split(',')
     return f"{elements[1].strip()} {elements[0]}"
 
-def __get_abstract(parsed_data: etree.Element) -> Optional[str]:
+def __get_abstract(parsed_data: etree.Element, html_comments: bool) -> Optional[str]:
     result: str = ''
     abstract = parsed_data.find('.//abstrakt')
     if abstract is None:
@@ -406,7 +407,7 @@ def __get_abstract(parsed_data: etree.Element) -> Optional[str]:
         # Trying to avoid fragments
         if paragraph.tag != 'akap':
             continue
-        if config.get_pref('html_comments'):
+        if html_comments:
             pseudo_html = tostring(paragraph, encoding="utf-8").decode(encoding="utf-8")
             result += __get_html_formatting(pseudo_html)
         else:

@@ -45,33 +45,13 @@ class PluginConfig:
         self.__options = [
             Option('html_comments', 'bool', True, _('HTML in comments'),
                 _('Choose if comments\' formating should be downloaded as well')),
-            Option('prefered_covers', 'choices', list(COVER_NAMES.keys()),
+            Option('prefered_covers', 'list', list(COVER_NAMES.keys()),
                 _('Cover type preferences'), _('Order cover types preferences by draging them')),
             Option('max_covers', 'number', 2, _('Maximal number of covers to download'),
                 _('Maximal number of covers to download from the site (up to 2)')),
     ]
 
         self.__config.defaults['Options'] = _get_defaults(self.__options)
-        self.__ignoreable_fields = set(('publisher', 'pubdate', 'comments'))
-
-    def get_pref(self, opt: str) -> Any:
-        '''
-        Returns value of requested preference
-        If it's one of the ignore_fields, return True if the field should be extracted
-        and False if it should be ignored
-        Raises:
-        ValueError: if value opt could not be found among the included
-        '''
-        if opt in self.__ignoreable_fields:
-            if (ignore_fields := self.__config.get('ignore_fields')) is not None and \
-                opt in ignore_fields:
-                return False
-            return True
-
-        if (value := self.__config.get(opt)) is not None:
-            return value
-
-        raise ValueError(f'\'{opt}\' not among allowed values')
 
     def get_prefs(self) -> dict:
         '''
@@ -123,7 +103,7 @@ class ConfigWidget(DefaultConfigWidget):
         elif opt.type == 'bool':
             widget = QCheckBox(opt.label, self)
             widget.setChecked(bool(val))
-        elif opt.type == 'choices':
+        elif opt.type == 'list':
             widget = QListWidget(self)
             widget.setDragEnabled(True)
             widget.setAcceptDrops(False)
