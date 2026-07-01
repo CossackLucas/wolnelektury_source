@@ -16,7 +16,6 @@ from calibre.ebooks.metadata.book.base import Metadata
 from calibre.gui2.metadata.config import ConfigWidget
 from calibre.constants import numeric_version
 from calibre.utils.logging import ThreadSafeLog
-# ToDo: to be removed and replaced with local implementation
 from calibre.ebooks.metadata.sources.base import InternalMetadataCompareKeyGen
 # needed to lower required calibre version below 6.12.0
 try:
@@ -180,27 +179,6 @@ class WolneLekturySource(Source):
                 return search_result.group(3)
 
         return None
-
-    # pylint: disable=dangerous-default-value
-    def identify_results_keygen(self, title: Optional[str]=None, authors: Optional[list]=None,
-            identifiers={}) -> InternalMetadataCompareKeyGen:
-        '''
-        Return a function that is used to generate a key that can sort Metadata
-        objects by their relevance given a search query (title, authors,
-        identifiers).
-
-        These keys are used to sort the results of a call to :meth:`identify`.
-
-        For details on the default algorithm see
-        :class:`InternalMetadataCompareKeyGen`. Re-implement this function in
-        your plugin if the default algorithm is not suitable.
-        '''
-        # ToDo: prepare my version
-        def keygen(mi):
-            return InternalMetadataCompareKeyGen(mi, self, title, authors,
-                identifiers)
-        return keygen
-    # pylint: enable=dangerous-default-value
 
     # pylint: disable=too-many-positional-arguments, too-many-arguments, dangerous-default-value
     def identify(self, log: ThreadSafeLog, result_queue: Queue, abort: Event,
