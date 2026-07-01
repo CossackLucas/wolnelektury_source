@@ -32,6 +32,7 @@ except NameError:
 COVER_NAMES = {
     'cover': _('Regular cover'),
     'simple_cover': _('Simplified cover'),
+    'legacy_cover': _('Legacy cover'),
 }
 
 class PluginConfig:

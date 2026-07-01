@@ -8,11 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
 "POT-Creation-Date: 2026-07-01 19:58+0200\n"
-=======
-"POT-Creation-Date: 2026-07-01 16:32+0200\n"
->>>>>>> 1e80008 (Compatibility changes in prefered_covers and related messages)
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +46,6 @@ msgid "Maximal number of covers to download"
 msgstr ""
 
 #: config.py:51
-<<<<<<< HEAD
 msgid "Maximal number of covers to download from the site (up to 2)"
 msgstr ""
 
@@ -58,16 +53,11 @@ msgstr ""
 msgid "Regular cover"
 msgstr ""
 
-<<<<<<< HEAD
 #: consts.py:26
-=======
-#: consts.py:27
->>>>>>> 3b08081 (Translation update related to config widget changes)
 msgid "Simplified cover"
-=======
+
 #, python-brace-format
 msgid "Maximal number of covers to download from the site (up to {0:d})"
->>>>>>> 1e80008 (Compatibility changes in prefered_covers and related messages)
 msgstr ""
 
 #: consts.py:38

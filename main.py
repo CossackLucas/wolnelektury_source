@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from enum import Enum
 from threading import Event
+from string import Template
 
 try:
     from urllib.parse import quote_plus
@@ -237,22 +238,41 @@ class MetadataWorker(BaseWorker):
 
         max_covers = self.plugin.prefs['max_covers']
 
-        with access_data(self.browser.open(get_api_url(wolnelektury_id), timeout=self.timeout)) as page:
+        with access_data(self.browser.open(
+            get_api_url(wolnelektury_id),
+            timeout=self.timeout)
+        ) as page:
             self.log.info("Parsing data for covers")
             parsed_data: dict = json.load(page)
             for i, cover_name in enumerate(user_cover_names):
                 if max_covers == i:
                     self.log.info(
-                        f'Stopping search for covers early at {i}th search, found {len(result)} url(s)'
-                        )
+                    f'Stopping search for covers early at {i}th search, found {len(result)} url(s)'
+                    )
                     break
-                url = parsed_data.get(cover_name)
+
+                if cover_name == 'legacy_cover':
+                    url = self.__get_legacy_cover_url(wolnelektury_id)
+                else:
+                    url = parsed_data.get(cover_name)
                 if url is not None:
                     result.append(url)
 
         self.log.info(f'Search finished with {len(result)} urls found')
 
         return result
+
+    def __get_legacy_cover_url(self, wolnelektury_id: str) -> Optional[str]:
+        template_url = Template(
+            f'https://redakcja.wolnelektury.pl/cover/preview/{wolnelektury_id}/' \
+            + '?$mode=1&cover_class=legacy&width=600&height=')
+        available = False
+        with access_data(self.browser.open_novisit(
+            template_url.substitute(mode='view'),
+            timeout=self.timeout)
+        ):
+            available = True
+        return template_url.substitute(mode='download') if available else None
 
 class AuthorWorker(BaseWorker):
     '''
