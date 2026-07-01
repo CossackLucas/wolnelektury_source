@@ -46,9 +46,35 @@ class PluginConfig:
                 _('Choose if comments\' formating should be downloaded as well')),
             Option('prefered_covers', 'list', list(COVER_NAMES.keys()),
                 _('Cover type preferences'), _('Order cover types preferences by draging them')),
-            Option('max_covers', 'number', len(COVER_NAMES), _('Maximal number of covers to download'),
-                _('Maximal number of covers to download from the site (up to 2)')),
-    ]
+            Option('max_covers', 'number', len(COVER_NAMES),
+                _('Maximal number of covers to download'),
+                _('Maximal number of covers to download from the site (up to {0:d})')
+                .format(len(COVER_NAMES))),
+        ]
+
+        # Compability
+        correction = False
+        if (check_record := self.__config.get('prefered_cover')) is not None:
+            self.__config['prefered_covers'] = [check_record]
+            self.__config.pop('prefered_cover')
+            correction = True
+        # filling the cover list, if plugin is updated
+        keys = set(COVER_NAMES.keys())
+        temp = []
+        val = self.__config['prefered_covers']
+        for item in val:
+            if item not in keys:
+                temp.append(item)
+                correction = True
+        for item in temp:
+            val.remove(item)
+        if len(keys) != len(val):
+            diff = keys - set(val)
+            correction = True
+            for item in diff:
+                val.append(item)
+        if correction:
+            self.__config.commit()
 
     def get_prefs(self) -> dict:
         '''
@@ -113,22 +139,10 @@ class ConfigWidget(DefaultConfigWidget):
                         max_width = width
                 widget.setMaximumSize(10*max_width, 25*len(COVER_NAMES))
 
-                # prepared for new options
-                keys = set(COVER_NAMES.keys())
-                temp = []
-                for item in val:
-                    if item not in keys:
-                        temp.append(item)
-                for item in temp:
-                    val.remove(item)
-                if len(keys) != len(val):
-                    diff = keys - set(val)
-                    for item in diff:
-                        val.append(item)
                 for item in val:
                     widget.addItem(CoverItem(CoverType(item, COVER_NAMES[item]), widget))
             case _:
-                raise ValueError(f'{opt.type} not correct option type!')
+                raise ValueError(f'{opt.type} is not correct option type!')
 
         widget.opt = opt
         widget.setToolTip(textwrap.fill(opt.desc))
